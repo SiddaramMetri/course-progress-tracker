@@ -156,3 +156,39 @@
 .lesson-content ol { list-style-type: decimal; }
 .lesson-content li { margin: 0.25rem 0; }
 .lesson-content strong { font-weight: 600; }
+
+/* Hero grid background */
+.hero-grid {
+  background-size: 64px 64px;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+}
+
+.hero-grid-mask {
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, transparent 10%, white 100%);
+}
+
+/* Card grid pattern */
+.card-grid {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+}
+
+.dark .hero-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+.dark .hero-grid-mask {
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, transparent 10%, black 100%);
+}
+
+.dark .card-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+}

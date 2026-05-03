@@ -75,6 +75,7 @@ export function LessonFormDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!title.trim()) return;
     setSaving(true);
     try {
@@ -104,7 +105,7 @@ export function LessonFormDialog({
   return (
     <Sheet open={open} onOpenChange={handleOpen}>
       <SheetTrigger>{trigger}</SheetTrigger>
-      <SheetContent side="right" className="sm:max-w-lg w-full overflow-y-auto">
+      <SheetContent side="right" className="sm:max-w-lg w-full overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <SheetHeader>
           <SheetTitle>
             {mode === "create" ? "New Lesson" : "Edit Lesson"}

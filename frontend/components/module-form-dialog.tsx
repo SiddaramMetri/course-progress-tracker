@@ -51,6 +51,7 @@ export function ModuleFormDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!title.trim()) return;
     setSaving(true);
     try {
@@ -78,7 +79,7 @@ export function ModuleFormDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpen}>
       <DialogTrigger>{trigger}</DialogTrigger>
-      <DialogContent>
+      <DialogContent onClick={(e) => e.stopPropagation()}>
         <DialogTitle>
           {mode === "create" ? "New Module" : "Edit Module"}
         </DialogTitle>

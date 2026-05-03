@@ -14,6 +14,7 @@ import Link from "next/link";
 import { use } from "react";
 import { toast } from "sonner";
 
+import { GradientCover } from "@/components/gradient-cover";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -254,9 +255,13 @@ export default function ExploreCourseDetailPage({
           </div>
 
           {/* Cover placeholder */}
-          <div className="w-full md:w-72 h-48 md:h-auto rounded-xl border bg-gradient-to-br from-primary/10 to-muted flex items-center justify-center shrink-0">
-            <BookOpen className="h-16 w-16 text-primary/20" />
-          </div>
+          <GradientCover
+            height="h-48 md:h-auto"
+            variant={course.is_free ? "green" : "violet"}
+            iconSize="h-16 w-16"
+            className="w-full md:w-72 rounded-xl border shrink-0"
+          >
+          </GradientCover>
         </div>
       </section>
 

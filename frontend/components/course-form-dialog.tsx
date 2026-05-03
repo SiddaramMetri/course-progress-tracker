@@ -50,6 +50,7 @@ export function CourseFormDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!title.trim()) return;
     setSaving(true);
     try {
@@ -77,7 +78,7 @@ export function CourseFormDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpen}>
       <DialogTrigger>{trigger}</DialogTrigger>
-      <DialogContent>
+      <DialogContent onClick={(e) => e.stopPropagation()}>
         <DialogTitle>
           {mode === "create" ? "New Course" : "Edit Course"}
         </DialogTitle>

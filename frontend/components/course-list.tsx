@@ -16,6 +16,7 @@ import { useConfirm } from "@/hooks/use-confirm";
 import { useCourses } from "@/hooks/use-courses";
 
 import { CourseFormDialog } from "./course-form-dialog";
+import { GradientCover } from "./gradient-cover";
 
 export function CourseList({ hideAdminControls = false }: { hideAdminControls?: boolean }) {
   const { courses, loading, error, refetch } = useCourses();
@@ -87,19 +88,19 @@ export function CourseList({ hideAdminControls = false }: { hideAdminControls?: 
           <Link key={course.id} href={`/courses/${course.id}`}>
             <div className="rounded-xl border overflow-hidden transition-all hover:shadow-lg hover:border-primary/30 cursor-pointer group relative h-full flex flex-col">
               {/* Cover Image */}
-              <div className="relative h-40 bg-gradient-to-br from-primary/20 via-primary/10 to-muted overflow-hidden">
-                {course.cover_image_url ? (
+              <GradientCover
+                height="h-40"
+                variant={course.is_free ? "green" : "primary"}
+                showIcon={!course.cover_image_url}
+              >
+                {course.cover_image_url && (
                   <Image
                     src={course.cover_image_url}
                     alt={course.title}
                     fill
-                    className="object-cover"
+                    className="object-cover absolute inset-0"
                     unoptimized
                   />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <BookOpen className="h-12 w-12 text-primary/30" />
-                  </div>
                 )}
                 {isComplete && (
                   <Badge
@@ -142,7 +143,7 @@ export function CourseList({ hideAdminControls = false }: { hideAdminControls?: 
                     </Button>
                   </div>
                 )}
-              </div>
+              </GradientCover>
 
               {/* Content */}
               <div className="p-4 flex-1 flex flex-col">
