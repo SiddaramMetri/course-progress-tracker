@@ -487,5 +487,6 @@ def is_module_unlocked_for_user(
         .first()
     )
     if not sched:
-        return False
+        # No schedule means no restriction - module is unlocked
+        return True
     return sched.unlock_date <= today
