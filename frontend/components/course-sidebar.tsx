@@ -1,6 +1,32 @@
 "use client";
 
-import { CheckCircle2, Circle, Lock, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
+  CheckCircle2,
+  Circle,
+  GripVertical,
+  Lock,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import {
   Accordion,
@@ -8,13 +34,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-
 import { useAdmin } from "@/hooks/use-admin";
 import { useAuth } from "@/hooks/use-auth";
 import { useConfirm } from "@/hooks/use-confirm";
-import type { CourseDetail, LessonOut } from "@/types";
+import { apiFetch } from "@/lib/api";
+import type { CourseDetail, LessonOut, ModuleOut } from "@/types";
 
 import { CourseProgress } from "./course-progress";
 import { LessonFormDialog } from "./lesson-form-dialog";
@@ -27,6 +51,180 @@ interface CourseSidebarProps {
   onSelectLesson: (lesson: LessonOut) => void;
   onRefetch: () => void;
   hideAdminControls?: boolean;
+}
+
+function SortableLesson({
+  lesson,
+  isSelected,
+  isAdmin,
+  onSelect,
+  onDelete,
+  onRefetch,
+}: {
+  lesson: LessonOut;
+  isSelected: boolean;
+  isAdmin: boolean;
+  onSelect: () => void;
+  onDelete: () => void;
+  onRefetch: () => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: lesson.id, disabled: !isAdmin });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : "auto",
+    position: "relative" as const,
+    background: isDragging ? "var(--color-background, white)" : undefined,
+    boxShadow: isDragging ? "0 2px 8px rgba(0,0,0,0.12)" : undefined,
+    borderRadius: "0.375rem",
+  };
+
+  return (
+    <li ref={setNodeRef} style={style} className="flex items-center group/lesson">
+      {isAdmin && (
+        <span
+          {...attributes}
+          {...listeners}
+          className="shrink-0 p-1 cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground touch-none"
+          title="Drag to reorder"
+        >
+          <GripVertical className="h-3.5 w-3.5" />
+        </span>
+      )}
+      <button
+        onClick={onSelect}
+        title={lesson.title}
+        className={`flex flex-1 min-w-0 items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors text-left ${
+          isSelected
+            ? "bg-primary/10 text-primary font-medium"
+            : "hover:bg-muted"
+        }`}
+      >
+        {lesson.completed ? (
+          <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+        ) : (
+          <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
+        )}
+        <span className="truncate flex-1">{lesson.title}</span>
+      </button>
+      {isAdmin && (
+        <span className="flex gap-0.5 shrink-0 opacity-0 group-hover/lesson:opacity-100 transition-opacity">
+          <LessonFormDialog
+            mode="edit"
+            lessonId={lesson.id}
+            initialTitle={lesson.title}
+            initialDescription={lesson.description ?? ""}
+            initialVideoUrl={lesson.video_url ?? ""}
+            initialLessonType={lesson.lesson_type}
+            initialDuration={lesson.duration_minutes}
+            initialSortOrder={lesson.sort_order}
+            onSuccess={onRefetch}
+            trigger={
+              <span className="p-1 rounded hover:bg-muted cursor-pointer inline-flex">
+                <Pencil className="h-3 w-3 text-muted-foreground" />
+              </span>
+            }
+          />
+          <span
+            className="p-1 rounded hover:bg-muted cursor-pointer inline-flex"
+            onClick={onDelete}
+          >
+            <Trash2 className="h-3 w-3 text-destructive" />
+          </span>
+        </span>
+      )}
+    </li>
+  );
+}
+
+/** Wrapper that holds local lesson order for smooth drag & drop */
+function SortableLessonList({
+  module,
+  selectedLessonId,
+  isAdmin,
+  onSelectLesson,
+  onDeleteLesson,
+  onRefetch,
+}: {
+  module: ModuleOut;
+  selectedLessonId: string | null;
+  isAdmin: boolean;
+  onSelectLesson: (lesson: LessonOut) => void;
+  onDeleteLesson: (id: string) => void;
+  onRefetch: () => void;
+}) {
+  const [lessons, setLessons] = useState(module.lessons);
+
+  // Sync from props when server data changes (e.g. after add/delete)
+  useEffect(() => {
+    setLessons(module.lessons);
+  }, [module.lessons]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = lessons.findIndex((l) => l.id === active.id);
+    const newIndex = lessons.findIndex((l) => l.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Optimistic update - reorder locally first
+    const reordered = arrayMove(lessons, oldIndex, newIndex);
+    setLessons(reordered);
+
+    // Sync to backend in background
+    const items = reordered.map((l, i) => ({ id: l.id, sort_order: i }));
+    try {
+      await apiFetch(`/modules/${module.id}/reorder-lessons`, {
+        method: "PUT",
+        body: JSON.stringify(items),
+      });
+    } catch {
+      toast.error("Failed to reorder lessons");
+      setLessons(module.lessons); // revert on error
+    }
+  };
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      modifiers={[restrictToVerticalAxis]}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext
+        items={lessons.map((l) => l.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <ul className="flex flex-col gap-0.5">
+          {lessons.map((lesson) => (
+            <SortableLesson
+              key={lesson.id}
+              lesson={lesson}
+              isSelected={lesson.id === selectedLessonId}
+              isAdmin={isAdmin}
+              onSelect={() => onSelectLesson(lesson)}
+              onDelete={() => onDeleteLesson(lesson.id)}
+              onRefetch={onRefetch}
+            />
+          ))}
+        </ul>
+      </SortableContext>
+    </DndContext>
+  );
 }
 
 export function CourseSidebar({
@@ -78,7 +276,9 @@ export function CourseSidebar({
 
       <Accordion
         multiple
-        defaultValue={course.modules.filter((m) => !m.is_locked).map((m) => m.id)}
+        defaultValue={course.modules
+          .filter((m) => !m.is_locked)
+          .map((m) => m.id)}
         className="w-full"
       >
         {course.modules.map((module) => (
@@ -89,7 +289,9 @@ export function CourseSidebar({
                   {module.is_locked && (
                     <Lock className="h-3.5 w-3.5 text-orange-500 shrink-0" />
                   )}
-                  <span className={`flex-1 ${module.is_locked ? "text-muted-foreground" : ""}`}>
+                  <span
+                    className={`flex-1 ${module.is_locked ? "text-muted-foreground" : ""}`}
+                  >
                     {module.title}
                   </span>
                   {isAdmin && !module.is_locked && (
@@ -138,7 +340,9 @@ export function CourseSidebar({
                       <li key={lesson.id}>
                         <div className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground cursor-not-allowed">
                           <Lock className="h-3.5 w-3.5 text-orange-400 shrink-0" />
-                          <span className="truncate flex-1">{lesson.title}</span>
+                          <span className="truncate flex-1">
+                            {lesson.title}
+                          </span>
                         </div>
                       </li>
                     ))}
@@ -153,59 +357,14 @@ export function CourseSidebar({
                   )}
                 </div>
               ) : (
-                <>
-                  <ul className="flex flex-col gap-1">
-                    {module.lessons.map((lesson) => {
-                      const isSelected = lesson.id === selectedLessonId;
-
-                      return (
-                        <li key={lesson.id} className="flex items-center group/lesson">
-                          <button
-                            onClick={() => onSelectLesson(lesson)}
-                            className={`flex flex-1 items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors text-left ${
-                              isSelected
-                                ? "bg-primary/10 text-primary font-medium"
-                                : "hover:bg-muted"
-                            }`}
-                          >
-                            {lesson.completed ? (
-                              <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                            ) : (
-                              <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
-                            )}
-                            <span className="truncate flex-1">{lesson.title}</span>
-                          </button>
-                          {isAdmin && (
-                            <span className="flex gap-0.5 opacity-0 group-hover/lesson:opacity-100 transition-opacity pr-1">
-                              <LessonFormDialog
-                                mode="edit"
-                                lessonId={lesson.id}
-                                initialTitle={lesson.title}
-                                initialDescription={lesson.description ?? ""}
-                                initialVideoUrl={lesson.video_url ?? ""}
-                                initialLessonType={lesson.lesson_type}
-                                initialDuration={lesson.duration_minutes}
-                                initialSortOrder={lesson.sort_order}
-                                onSuccess={onRefetch}
-                                trigger={
-                                  <span className="p-0.5 rounded hover:bg-muted cursor-pointer inline-flex">
-                                    <Pencil className="h-3 w-3 text-muted-foreground" />
-                                  </span>
-                                }
-                              />
-                              <span
-                                className="p-0.5 rounded hover:bg-muted cursor-pointer inline-flex"
-                                onClick={() => handleDeleteLesson(lesson.id)}
-                              >
-                                <Trash2 className="h-3 w-3 text-destructive" />
-                              </span>
-                            </span>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </>
+                <SortableLessonList
+                  module={module}
+                  selectedLessonId={selectedLessonId}
+                  isAdmin={isAdmin}
+                  onSelectLesson={onSelectLesson}
+                  onDeleteLesson={handleDeleteLesson}
+                  onRefetch={onRefetch}
+                />
               )}
               {isAdmin && (
                 <LessonFormDialog

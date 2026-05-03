@@ -46,6 +46,7 @@ class UserAdminOut(BaseModel):
     batch_id: uuid.UUID | None
     batch_name: str | None = None
     created_at: datetime
+    last_login_at: datetime | None = None
     total_lessons: int = 0
     completed_lessons: int = 0
     progress_percent: int = 0

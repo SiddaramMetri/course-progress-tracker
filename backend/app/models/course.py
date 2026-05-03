@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -13,7 +13,7 @@ class Course(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         default=uuid.uuid4, primary_key=True
     )
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    title: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     description: Mapped[str | None] = mapped_column(Text)
     cover_image_key: Mapped[str | None] = mapped_column(
         String(1000), nullable=True
@@ -38,6 +38,9 @@ class Course(Base):
 
 class Module(Base):
     __tablename__ = "modules"
+    __table_args__ = (
+        UniqueConstraint("course_id", "title", name="uq_module_course_title"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         default=uuid.uuid4, primary_key=True
@@ -62,6 +65,9 @@ class Module(Base):
 
 class Lesson(Base):
     __tablename__ = "lessons"
+    __table_args__ = (
+        UniqueConstraint("module_id", "title", name="uq_lesson_module_title"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         default=uuid.uuid4, primary_key=True

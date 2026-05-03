@@ -39,6 +39,14 @@ export function useAdmin() {
       invalidateCourses();
     },
 
+    duplicateCourse: async (id: string) => {
+      const result = await apiFetch(`/courses/${id}/duplicate`, {
+        method: "POST",
+      });
+      invalidateCourses();
+      return result;
+    },
+
     createModule: async (courseId: string, data: ModuleInput) => {
       const result = await apiFetch(`/courses/${courseId}/modules`, {
         method: "POST",

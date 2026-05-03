@@ -109,10 +109,8 @@ export function ModuleFormDialog({
             />
           </div>
           <div className="flex justify-end gap-2">
-            <DialogClose>
-              <Button type="button" variant="outline">
-                Cancel
-              </Button>
+            <DialogClose render={<Button type="button" variant="outline" />}>
+              Cancel
             </DialogClose>
             <Button type="submit" disabled={saving || !title.trim()}>
               {saving ? "Saving..." : mode === "create" ? "Create" : "Save"}

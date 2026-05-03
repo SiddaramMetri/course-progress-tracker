@@ -30,11 +30,23 @@ def toggle_lesson(
         course = db.query(Course).filter(Course.id == module.course_id).first() if module else None
 
         if course and not course.is_free:
-            # Premium course - check if user has batch access
+            # Premium course - check batch access OR approved request
+            from app.models import AccessRequest
+
             available_ids = admin_service.get_learner_available_courses(
                 db, user.id, user.batch_id
             )
-            if course.id not in available_ids:
+            has_approved = (
+                db.query(AccessRequest)
+                .filter(
+                    AccessRequest.user_id == user.id,
+                    AccessRequest.course_id == course.id,
+                    AccessRequest.status == "approved",
+                )
+                .first()
+                is not None
+            )
+            if course.id not in available_ids and not has_approved:
                 raise HTTPException(
                     status_code=403,
                     detail="You don't have access to this course",

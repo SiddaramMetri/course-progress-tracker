@@ -65,6 +65,7 @@ class CourseCreate(BaseModel):
 class CourseUpdate(BaseModel):
     title: str | None = None
     description: str | None = None
+    is_free: bool | None = None
 
 
 class ModuleCreate(BaseModel):

@@ -199,6 +199,8 @@ def update_course(
         course.title = data.title
     if data.description is not None:
         course.description = data.description
+    if data.is_free is not None:
+        course.is_free = data.is_free
     db.commit()
     db.refresh(course)
     return course

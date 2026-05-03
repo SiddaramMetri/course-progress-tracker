@@ -127,7 +127,8 @@ export function TopNavbar() {
                 displayNotifications.map((n) => (
                   <div
                     key={n.id}
-                    className={`flex gap-3 px-4 py-3 border-b last:border-b-0 ${
+                    onClick={() => !n.is_read && handleMarkRead(n.id)}
+                    className={`flex gap-3 px-4 py-3 border-b last:border-b-0 cursor-pointer hover:bg-muted/50 transition-colors ${
                       n.is_read ? "" : "bg-primary/5"
                     }`}
                   >
@@ -146,13 +147,12 @@ export function TopNavbar() {
                       </p>
                     </div>
                     {!n.is_read && (
-                      <button
-                        onClick={() => handleMarkRead(n.id)}
-                        className="shrink-0 mt-1 h-5 w-5 flex items-center justify-center rounded hover:bg-muted"
-                        title="Mark as read"
+                      <div
+                        className="shrink-0 mt-1 h-5 w-5 flex items-center justify-center rounded text-muted-foreground"
+                        title="Click to mark as read"
                       >
                         <Check className="h-3 w-3" />
-                      </button>
+                      </div>
                     )}
                   </div>
                 ))

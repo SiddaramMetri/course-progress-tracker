@@ -51,6 +51,7 @@ export interface ProgressToggleResponse {
 export interface CourseInput {
   title: string;
   description?: string | null;
+  is_free?: boolean;
 }
 
 export interface ModuleInput {

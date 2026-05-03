@@ -93,7 +93,8 @@ export default function NotificationsPage() {
             {items.map((notif) => (
               <div
                 key={notif.id}
-                className={`rounded-lg border p-4 transition-colors ${
+                onClick={() => !notif.is_read && handleMarkRead(notif.id)}
+                className={`rounded-lg border p-4 transition-colors cursor-pointer hover:bg-muted/50 ${
                   notif.is_read
                     ? "bg-background"
                     : "bg-primary/5 border-primary/20"
@@ -117,15 +118,12 @@ export default function NotificationsPage() {
                     </p>
                   </div>
                   {!notif.is_read && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 shrink-0"
-                      onClick={() => handleMarkRead(notif.id)}
-                      title="Mark as read"
+                    <div
+                      className="shrink-0 mt-1 h-7 w-7 flex items-center justify-center rounded text-muted-foreground"
+                      title="Click to mark as read"
                     >
                       <Check className="h-3.5 w-3.5" />
-                    </Button>
+                    </div>
                   )}
                 </div>
               </div>

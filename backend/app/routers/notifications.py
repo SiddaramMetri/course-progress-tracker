@@ -26,6 +26,7 @@ class NotificationOut(BaseModel):
 
 class NotificationCreate(BaseModel):
     user_id: uuid.UUID | None = None  # None = send to all learners
+    user_ids: list[uuid.UUID] | None = None  # Send to multiple specific users
     title: str
     message: str
 
@@ -108,8 +109,19 @@ def send_notification(
     db: Session = Depends(get_db),
     _admin: User = Depends(require_admin),
 ):
-    """Send notification to a specific user or all learners."""
-    if data.user_id:
+    """Send notification to a specific user, multiple users, or all learners."""
+    if data.user_ids and len(data.user_ids) > 0:
+        # Send to multiple specific users
+        for uid in data.user_ids:
+            notif = Notification(
+                user_id=uid,
+                title=data.title,
+                message=data.message,
+            )
+            db.add(notif)
+        db.commit()
+        return {"sent_to": len(data.user_ids)}
+    elif data.user_id:
         notif = Notification(
             user_id=data.user_id,
             title=data.title,

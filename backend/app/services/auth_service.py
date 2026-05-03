@@ -66,7 +66,9 @@ def login_user(
     if user.is_blocked:
         raise ValueError("Account is blocked. Contact your administrator.")
 
+    user.last_login_at = datetime.now(timezone.utc)
     session = _create_session(db, user.id)
+    db.commit()
     return user, session.token, session.refresh_token
 
 

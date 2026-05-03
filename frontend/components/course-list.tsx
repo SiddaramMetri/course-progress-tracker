@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Pencil, Trash2 } from "lucide-react";
+import { BookOpen, Pencil, Star, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -110,9 +110,14 @@ export function CourseList({ hideAdminControls = false }: { hideAdminControls?: 
                     Completed
                   </Badge>
                 )}
-                {course.is_free && (
+                {course.is_free ? (
                   <Badge className="absolute top-3 right-3 bg-blue-600">
                     FREE
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="absolute top-3 right-3 shadow-sm">
+                    <Star className="h-3 w-3 mr-1 text-amber-500" />
+                    Premium
                   </Badge>
                 )}
                 {/* Admin overlay */}
@@ -123,6 +128,8 @@ export function CourseList({ hideAdminControls = false }: { hideAdminControls?: 
                       courseId={course.id}
                       initialTitle={course.title}
                       initialDescription={course.description ?? ""}
+                      initialCoverUrl={course.cover_image_url ?? undefined}
+                      initialIsFree={course.is_free}
                       onSuccess={refetch}
                       trigger={
                         <span

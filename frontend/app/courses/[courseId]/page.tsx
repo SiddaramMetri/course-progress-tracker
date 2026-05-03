@@ -128,11 +128,11 @@ export default function CourseDetailPage({
       <AppShell>
         <div className="px-8 py-8">
           <Link
-            href="/dashboard"
+            href={isAdmin ? "/admin/courses" : "/dashboard"}
             className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to dashboard
+            {isAdmin ? "Back to courses" : "Back to dashboard"}
           </Link>
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
             <p className="text-destructive font-medium">
@@ -146,14 +146,15 @@ export default function CourseDetailPage({
 
   return (
     <AppShell>
-      <div className="px-8 py-8">
-        <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col h-[calc(100vh-3rem)]">
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-8 py-3 border-b shrink-0">
           <Link
-            href="/dashboard"
+            href={isAdmin ? "/admin/courses" : "/dashboard"}
             className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to dashboard
+            {isAdmin ? "Back to courses" : "Back to dashboard"}
           </Link>
           {isAdmin && (
             <Button
@@ -171,9 +172,9 @@ export default function CourseDetailPage({
           )}
         </div>
 
-        <div className="flex gap-8">
-          {/* Course sidebar */}
-          <aside className="w-72 shrink-0 border-r pr-6">
+        <div className="flex flex-1 min-h-0">
+          {/* Course sidebar - independent scroll */}
+          <aside className="w-72 shrink-0 border-r overflow-y-auto p-6">
             <CourseSidebar
               course={course}
               selectedLessonId={
@@ -185,8 +186,8 @@ export default function CourseDetailPage({
             />
           </aside>
 
-          {/* Lesson content */}
-          <div className="flex-1 min-w-0">
+          {/* Lesson content - independent scroll */}
+          <div className="flex-1 min-w-0 overflow-y-auto p-8">
             {/* Course completion celebration */}
             {course.total_count > 0 &&
               course.completed_count === course.total_count && (

@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import require_admin
+from app.models import Batch
 from app.models.user import User
 from app.schemas.admin import (
     BatchCreate,
@@ -108,6 +109,9 @@ def create_batch(
     _admin: User = Depends(require_admin),
 ):
     """Create a new batch."""
+    existing = db.query(Batch).filter(Batch.name == data.name.strip()).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="A batch with this name already exists")
     batch = admin_service.create_batch(db, data)
     return BatchOut(
         id=batch.id,

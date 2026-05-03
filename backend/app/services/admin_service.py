@@ -61,6 +61,7 @@ def get_all_users(db: Session) -> list[UserAdminOut]:
                 batch_id=user.batch_id,
                 batch_name=user.batch.name if user.batch else None,
                 created_at=user.created_at,
+                last_login_at=user.last_login_at,
                 total_lessons=total_lessons,
                 completed_lessons=completed,
                 progress_percent=pct,
