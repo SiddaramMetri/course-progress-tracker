@@ -67,6 +67,14 @@ class Lesson(Base):
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
+    video_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    video_storage_key: Mapped[str | None] = mapped_column(
+        String(1000), nullable=True
+    )
+    lesson_type: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="video"
+    )
+    duration_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

@@ -6,29 +6,23 @@ from sqlalchemy.orm import Session
 from app.models import UserProgress
 from app.schemas.progress import ProgressToggleResponse
 
-DEFAULT_USER_ID = "default-user"
-
 
 def toggle_lesson(
-    db: Session, lesson_id: uuid.UUID
+    db: Session, lesson_id: uuid.UUID, user_id: str = "default-user"
 ) -> ProgressToggleResponse:
-    """Toggle lesson completion for the default user.
-
-    Creates a progress record if none exists, otherwise flips the
-    completed flag.
-    """
+    """Toggle lesson completion for the given user."""
     progress = (
         db.query(UserProgress)
         .filter(
             UserProgress.lesson_id == lesson_id,
-            UserProgress.user_id == DEFAULT_USER_ID,
+            UserProgress.user_id == user_id,
         )
         .first()
     )
 
     if progress is None:
         progress = UserProgress(
-            user_id=DEFAULT_USER_ID,
+            user_id=user_id,
             lesson_id=lesson_id,
             completed=True,
             completed_at=datetime.now(timezone.utc),

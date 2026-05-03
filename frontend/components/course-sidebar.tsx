@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Circle } from "lucide-react";
+import { CheckCircle2, Circle, Pencil, Plus, Trash2 } from "lucide-react";
 
 import {
   Accordion,
@@ -8,22 +8,45 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { useAdmin } from "@/hooks/use-admin";
+import { useAuth } from "@/hooks/use-auth";
 import type { CourseDetail, LessonOut } from "@/types";
 
 import { CourseProgress } from "./course-progress";
+import { LessonFormDialog } from "./lesson-form-dialog";
+import { ModuleFormDialog } from "./module-form-dialog";
 import { ModuleProgress } from "./module-progress";
 
 interface CourseSidebarProps {
   course: CourseDetail;
   selectedLessonId: string | null;
   onSelectLesson: (lesson: LessonOut) => void;
+  onRefetch: () => void;
 }
 
 export function CourseSidebar({
   course,
   selectedLessonId,
   onSelectLesson,
+  onRefetch,
 }: CourseSidebarProps) {
+  const { user } = useAuth();
+  const admin = useAdmin();
+  const isAdmin = user?.role === "admin";
+
+  const handleDeleteModule = async (moduleId: string) => {
+    if (!confirm("Delete this module and all its lessons?")) return;
+    await admin.deleteModule(moduleId);
+    onRefetch();
+  };
+
+  const handleDeleteLesson = async (lessonId: string) => {
+    if (!confirm("Delete this lesson?")) return;
+    await admin.deleteLesson(lessonId);
+    onRefetch();
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -45,8 +68,35 @@ export function CourseSidebar({
         {course.modules.map((module) => (
           <AccordionItem key={module.id} value={module.id}>
             <AccordionTrigger className="text-sm font-medium hover:no-underline">
-              <div className="flex flex-col items-start gap-1 text-left">
-                <span>{module.title}</span>
+              <div className="flex flex-col items-start gap-1 text-left flex-1">
+                <div className="flex items-center gap-1 w-full">
+                  <span className="flex-1">{module.title}</span>
+                  {isAdmin && (
+                    <span
+                      className="flex gap-0.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <ModuleFormDialog
+                        mode="edit"
+                        moduleId={module.id}
+                        initialTitle={module.title}
+                        initialSortOrder={module.sort_order}
+                        onSuccess={onRefetch}
+                        trigger={
+                          <span className="p-0.5 rounded hover:bg-muted cursor-pointer inline-flex">
+                            <Pencil className="h-3 w-3 text-muted-foreground" />
+                          </span>
+                        }
+                      />
+                      <span
+                        className="p-0.5 rounded hover:bg-muted cursor-pointer inline-flex"
+                        onClick={() => handleDeleteModule(module.id)}
+                      >
+                        <Trash2 className="h-3 w-3 text-destructive" />
+                      </span>
+                    </span>
+                  )}
+                </div>
                 <ModuleProgress
                   completed={module.completed_count}
                   total={module.total_count}
@@ -59,10 +109,10 @@ export function CourseSidebar({
                   const isSelected = lesson.id === selectedLessonId;
 
                   return (
-                    <li key={lesson.id}>
+                    <li key={lesson.id} className="flex items-center group/lesson">
                       <button
                         onClick={() => onSelectLesson(lesson)}
-                        className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors text-left ${
+                        className={`flex flex-1 items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors text-left ${
                           isSelected
                             ? "bg-primary/10 text-primary font-medium"
                             : "hover:bg-muted"
@@ -73,16 +123,69 @@ export function CourseSidebar({
                         ) : (
                           <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
                         )}
-                        <span className="truncate">{lesson.title}</span>
+                        <span className="truncate flex-1">{lesson.title}</span>
                       </button>
+                      {isAdmin && (
+                        <span className="flex gap-0.5 opacity-0 group-hover/lesson:opacity-100 transition-opacity pr-1">
+                          <LessonFormDialog
+                            mode="edit"
+                            lessonId={lesson.id}
+                            initialTitle={lesson.title}
+                            initialDescription={lesson.description ?? ""}
+                            initialVideoUrl={lesson.video_url ?? ""}
+                            initialLessonType={lesson.lesson_type}
+                            initialDuration={lesson.duration_minutes}
+                            initialSortOrder={lesson.sort_order}
+                            onSuccess={onRefetch}
+                            trigger={
+                              <span className="p-0.5 rounded hover:bg-muted cursor-pointer inline-flex">
+                                <Pencil className="h-3 w-3 text-muted-foreground" />
+                              </span>
+                            }
+                          />
+                          <span
+                            className="p-0.5 rounded hover:bg-muted cursor-pointer inline-flex"
+                            onClick={() => handleDeleteLesson(lesson.id)}
+                          >
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          </span>
+                        </span>
+                      )}
                     </li>
                   );
                 })}
               </ul>
+              {isAdmin && (
+                <LessonFormDialog
+                  mode="create"
+                  moduleId={module.id}
+                  onSuccess={onRefetch}
+                  trigger={
+                    <span className="flex w-full items-center justify-center gap-1 mt-1 py-1 text-xs text-muted-foreground rounded-md hover:bg-muted cursor-pointer">
+                      <Plus className="h-3 w-3" />
+                      Add Lesson
+                    </span>
+                  }
+                />
+              )}
             </AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>
+
+      {isAdmin && (
+        <ModuleFormDialog
+          mode="create"
+          courseId={course.id}
+          onSuccess={onRefetch}
+          trigger={
+            <span className="flex w-full items-center justify-center gap-1 rounded-md border py-1.5 text-sm font-medium hover:bg-muted cursor-pointer">
+              <Plus className="h-4 w-4" />
+              Add Module
+            </span>
+          }
+        />
+      )}
     </div>
   );
 }

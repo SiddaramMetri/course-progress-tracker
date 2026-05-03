@@ -16,7 +16,7 @@ import type { AttachmentOut } from "@/types";
 interface AttachmentListProps {
   attachments: AttachmentOut[];
   loading: boolean;
-  onDelete: (attachmentId: string) => Promise<void>;
+  onDelete?: (attachmentId: string) => Promise<void>;
 }
 
 function getFileIcon(contentType: string) {
@@ -87,14 +87,16 @@ export function AttachmentList({
                 <Download className="h-4 w-4" />
               </Button>
             </a>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive hover:text-destructive"
-              onClick={() => onDelete(attachment.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive hover:text-destructive"
+                onClick={() => onDelete(attachment.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
           </li>
         );
       })}

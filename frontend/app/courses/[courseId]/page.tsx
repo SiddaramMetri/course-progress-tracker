@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { use } from "react";
 
+import { AppShell } from "@/components/app-shell";
 import { CourseSidebar } from "@/components/course-sidebar";
 import { LessonPanel } from "@/components/lesson-panel";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,58 +28,79 @@ export default function CourseDetailPage({
 
   const { toggle, toggling } = useToggleLesson(handleToggleSuccess);
 
+  // Flatten all lessons across modules for prev/next navigation
+  const allLessons = useMemo<LessonOut[]>(() => {
+    if (!course) return [];
+    return course.modules.flatMap((m) => m.lessons);
+  }, [course]);
+
   const selectedLesson = useMemo<LessonOut | null>(() => {
     if (!course) return null;
-
-    for (const module of course.modules) {
-      for (const lesson of module.lessons) {
-        if (lesson.id === selectedLessonId) return lesson;
-      }
+    if (selectedLessonId) {
+      const found = allLessons.find((l) => l.id === selectedLessonId);
+      if (found) return found;
     }
+    return allLessons[0] ?? null;
+  }, [course, selectedLessonId, allLessons]);
 
-    // Default to first lesson if none selected
-    const firstLesson = course.modules[0]?.lessons[0];
-    return firstLesson ?? null;
-  }, [course, selectedLessonId]);
+  const currentIndex = useMemo(() => {
+    if (!selectedLesson) return -1;
+    return allLessons.findIndex((l) => l.id === selectedLesson.id);
+  }, [selectedLesson, allLessons]);
+
+  const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
+  const nextLesson =
+    currentIndex >= 0 && currentIndex < allLessons.length - 1
+      ? allLessons[currentIndex + 1]
+      : null;
 
   const handleSelectLesson = useCallback((lesson: LessonOut) => {
     setSelectedLessonId(lesson.id);
   }, []);
 
+  const handlePrev = useCallback(() => {
+    if (prevLesson) setSelectedLessonId(prevLesson.id);
+  }, [prevLesson]);
+
+  const handleNext = useCallback(() => {
+    if (nextLesson) setSelectedLessonId(nextLesson.id);
+  }, [nextLesson]);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="mx-auto max-w-6xl px-6 py-8">
-          <Skeleton className="h-6 w-32 mb-8" />
+      <AppShell>
+        <div className="px-8 py-8">
+          <Skeleton className="h-5 w-32 mb-6" />
           <div className="flex gap-8">
-            <div className="w-80 shrink-0">
-              <Skeleton className="h-6 w-48 mb-4" />
-              <Skeleton className="h-3 w-full mb-6" />
+            <div className="w-72 shrink-0">
+              <Skeleton className="h-5 w-48 mb-4" />
+              <Skeleton className="h-2 w-full mb-6" />
               {[1, 2, 3].map((i) => (
                 <Skeleton key={i} className="h-10 w-full mb-2" />
               ))}
             </div>
             <div className="flex-1">
-              <Skeleton className="h-8 w-64 mb-4" />
+              <Skeleton className="h-7 w-64 mb-4" />
+              <Skeleton className="aspect-video w-full mb-4" />
               <Skeleton className="h-4 w-full mb-2" />
               <Skeleton className="h-4 w-3/4" />
             </div>
           </div>
         </div>
-      </div>
+      </AppShell>
     );
   }
 
   if (error || !course) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="mx-auto max-w-6xl px-6 py-8">
+      <AppShell>
+        <div className="px-8 py-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-8"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to courses
+            Back to dashboard
           </Link>
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
             <p className="text-destructive font-medium">
@@ -86,40 +108,48 @@ export default function CourseDetailPage({
             </p>
           </div>
         </div>
-      </div>
+      </AppShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-6xl px-6 py-8">
+    <AppShell>
+      <div className="px-8 py-8">
         <Link
           href="/"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-8"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to courses
+          Back to dashboard
         </Link>
 
         <div className="flex gap-8">
-          {/* Sidebar */}
-          <aside className="w-80 shrink-0 border-r pr-6">
+          {/* Course sidebar */}
+          <aside className="w-72 shrink-0 border-r pr-6">
             <CourseSidebar
               course={course}
               selectedLessonId={
                 selectedLessonId ?? course.modules[0]?.lessons[0]?.id ?? null
               }
               onSelectLesson={handleSelectLesson}
+              onRefetch={refetch}
             />
           </aside>
 
-          {/* Main content */}
-          <main className="flex-1 min-w-0">
+          {/* Lesson content */}
+          <div className="flex-1 min-w-0">
             {selectedLesson ? (
               <LessonPanel
                 lesson={selectedLesson}
                 onToggle={toggle}
                 toggling={toggling}
+                onPrev={handlePrev}
+                onNext={handleNext}
+                hasPrev={!!prevLesson}
+                hasNext={!!nextLesson}
+                prevTitle={prevLesson?.title}
+                nextTitle={nextLesson?.title}
+                onRefetch={refetch}
               />
             ) : (
               <div className="rounded-lg border border-dashed p-12 text-center">
@@ -128,9 +158,9 @@ export default function CourseDetailPage({
                 </p>
               </div>
             )}
-          </main>
+          </div>
         </div>
       </div>
-    </div>
+    </AppShell>
   );
 }
