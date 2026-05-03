@@ -98,7 +98,7 @@ export default function CourseDetailPage({
       <AppShell>
         <div className="px-8 py-8">
           <Link
-            href="/"
+            href="/dashboard"
             className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -118,7 +118,7 @@ export default function CourseDetailPage({
     <AppShell>
       <div className="px-8 py-8">
         <Link
-          href="/"
+          href="/dashboard"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="h-4 w-4" />

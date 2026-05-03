@@ -1,6 +1,7 @@
 "use client";
 
 import { GraduationCap, Shield, User } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { toast } from "sonner";
@@ -44,7 +45,7 @@ export default function LoginPage() {
 }
 
 function LoginForm() {
-  const { login, user } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -54,8 +55,17 @@ function LoginForm() {
   );
   const [loading, setLoading] = useState(false);
 
-  // Already logged in - redirect handled by AuthGuard, just show nothing
-  if (user) return null;
+  const redirectTo = searchParams.get("redirect") || "/dashboard";
+
+  // Already authenticated - go to redirect target
+  if (isAuthenticated) {
+    router.replace(redirectTo);
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Redirecting...</p>
+      </div>
+    );
+  }
 
   const handleLogin = async (loginEmail: string, loginPassword: string) => {
     setError(null);
@@ -63,7 +73,7 @@ function LoginForm() {
     try {
       await login(loginEmail, loginPassword);
       toast.success("Welcome back!");
-      router.push("/");
+      router.push(redirectTo);
     } catch (err) {
       const raw = err instanceof Error ? err.message : "Login failed";
       const errorMsg = raw.includes("blocked")
@@ -168,6 +178,18 @@ function LoginForm() {
             })}
           </div>
         </div>
+
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Don&apos;t have an account?{" "}
+          <Link href="/register" className="text-primary hover:underline">
+            Create one
+          </Link>
+        </p>
+        <p className="text-center text-sm text-muted-foreground mt-2">
+          <Link href="/" className="hover:underline">
+            Back to website
+          </Link>
+        </p>
       </div>
     </div>
   );

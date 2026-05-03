@@ -1,4 +1,4 @@
-"""Seed the database with sample course data.
+"""Seed the database with demo data.
 
 Run from the backend directory:
     python -m app.seed
@@ -13,466 +13,116 @@ from app.services.auth_service import hash_password
 
 
 DEMO_BATCHES = [
-    {
-        "name": "July-2026",
-        "description": "July 2026 intake batch",
-        "start_date": date(2026, 7, 1),
-        "end_date": date(2026, 7, 31),
-    },
-    {
-        "name": "August-2026",
-        "description": "August 2026 intake batch",
-        "start_date": date(2026, 8, 1),
-        "end_date": date(2026, 8, 31),
-    },
+    {"name": "July-2026", "description": "July 2026 intake batch", "start_date": date(2026, 7, 1), "end_date": date(2026, 7, 31)},
+    {"name": "August-2026", "description": "August 2026 intake batch", "start_date": date(2026, 8, 1), "end_date": date(2026, 8, 31)},
+    {"name": "September-2026", "description": "September 2026 intake batch", "start_date": date(2026, 9, 1), "end_date": date(2026, 9, 30)},
 ]
-
 
 DEMO_USERS = [
-    {
-        "email": "admin@demo.com",
-        "password": "admin123",
-        "name": "Admin User",
-        "role": "admin",
-    },
-    {
-        "email": "alice@demo.com",
-        "password": "learner123",
-        "name": "Alice Johnson",
-        "role": "learner",
-    },
-    {
-        "email": "bob@demo.com",
-        "password": "learner123",
-        "name": "Bob Smith",
-        "role": "learner",
-    },
+    {"email": "admin@demo.com", "password": "admin123", "name": "Admin User", "role": "admin"},
+    {"email": "alice@demo.com", "password": "learner123", "name": "Alice Johnson", "role": "learner", "mobile": "+91 9876543210"},
+    {"email": "bob@demo.com", "password": "learner123", "name": "Bob Smith", "role": "learner", "mobile": "+91 9876543211"},
+    {"email": "charlie@demo.com", "password": "learner123", "name": "Charlie Davis", "role": "learner"},
+    {"email": "diana@demo.com", "password": "learner123", "name": "Diana Patel", "role": "learner", "mobile": "+91 9876543212"},
+    {"email": "eve@demo.com", "password": "learner123", "name": "Eve Martinez", "role": "learner"},
 ]
 
-
+# 5 courses: 3 paid, 2 free. Text-only descriptions, no video URLs.
 SEED_DATA = [
     {
-        "title": "Introduction to Python",
-        "description": (
-            "Learn Python from scratch. Covers fundamentals, control flow, "
-            "functions, and data structures."
-        ),
+        "title": "Python Programming Fundamentals",
+        "description": "A comprehensive introduction to Python programming. Learn variables, control flow, functions, and object-oriented programming from scratch.",
+        "is_free": False,
         "modules": [
-            {
-                "title": "Getting Started",
-                "sort_order": 0,
-                "lessons": [
-                    {
-                        "title": "Installing Python",
-                        "description": (
-                            "Download and install Python on your machine. "
-                            "Set up your development environment and verify "
-                            "the installation with a simple command."
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=YYXdXT2l-Gg",
-                        "sort_order": 0,
-                    },
-                    {
-                        "title": "Your First Script",
-                        "description": (
-                            "Write and run your very first Python script. "
-                            "Learn about the print function and how Python "
-                            "executes code line by line."
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=kqtD5dpn9C8",
-                        "sort_order": 1,
-                    },
-                    {
-                        "title": "Variables & Types",
-                        "description": (
-                            "Understand how to store data in variables. "
-                            "Explore strings, integers, floats, and booleans."
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=cQT33yu9pY8",
-                        "sort_order": 2,
-                    },
-                ],
-            },
-            {
-                "title": "Control Flow",
-                "sort_order": 1,
-                "lessons": [
-                    {
-                        "title": "If Statements",
-                        "description": (
-                            "Make decisions in your code using if, elif, "
-                            "and else. Learn comparison and logical operators."
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=f4KOjWS_KZs",
-                        "sort_order": 0,
-                    },
-                    {
-                        "title": "For Loops",
-                        "description": (
-                            "Iterate over sequences with for loops. Work with "
-                            "range(), lists, and string iteration."
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=94UHCEmprCY",
-                        "sort_order": 1,
-                    },
-                    {
-                        "title": "While Loops",
-                        "description": (
-                            "Repeat actions with while loops. Learn about "
-                            "break, continue, and loop conditions."
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=6iF8Xb7Z3wQ",
-                        "sort_order": 2,
-                    },
-                ],
-            },
-            {
-                "title": "Functions",
-                "sort_order": 2,
-                "lessons": [
-                    {
-                        "title": "Defining Functions",
-                        "description": (
-                            "Create reusable blocks of code with def. "
-                            "Understand function scope and return values."
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=9Os0o3wzS_I",
-                        "sort_order": 0,
-                    },
-                    {
-                        "title": "Parameters & Returns",
-                        "description": (
-                            "Pass data into functions with parameters. "
-                            "Use default arguments and return multiple values."
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=u-OmVr_fT4s",
-                        "sort_order": 1,
-                    },
-                ],
-            },
+            {"title": "Getting Started with Python", "sort_order": 0, "lessons": [
+                {"title": "Setting Up Your Environment", "sort_order": 0, "video_url": "https://www.youtube.com/watch?v=YYXdXT2l-Gg", "description": "<h2>Development Setup</h2><p>Install Python 3.x and configure your IDE. We recommend VS Code with the Python extension for the best experience.</p><ul><li>Download Python from python.org</li><li>Install VS Code</li><li>Configure the Python interpreter</li></ul>"},
+                {"title": "Hello World & Basic Syntax", "sort_order": 1, "video_url": "https://www.youtube.com/watch?v=kqtD5dpn9C8", "description": "<p>Write your first Python program. Learn about <strong>print()</strong>, comments, and how Python executes code line by line.</p>"},
+                {"title": "Variables and Data Types", "sort_order": 2, "video_url": "https://www.youtube.com/watch?v=cQT33yu9pY8", "description": "<p>Understand strings, integers, floats, and booleans. Learn type conversion and f-string formatting.</p>"},
+            ]},
+            {"title": "Control Flow", "sort_order": 1, "lessons": [
+                {"title": "Conditional Statements", "sort_order": 0, "video_url": "https://www.youtube.com/watch?v=f4KOjWS_KZs", "description": "<p>Master <strong>if</strong>, <strong>elif</strong>, and <strong>else</strong> statements. Learn comparison operators and logical operators.</p>"},
+                {"title": "Loops - For and While", "sort_order": 1, "video_url": "https://www.youtube.com/watch?v=94UHCEmprCY", "description": "<p>Iterate with <strong>for</strong> loops and <strong>while</strong> loops. Use <code>range()</code>, <code>break</code>, and <code>continue</code>.</p>"},
+                {"title": "List Comprehensions", "sort_order": 2, "description": "<p>Write concise, Pythonic code with list comprehensions. Transform and filter data in a single line.</p>"},
+            ]},
+            {"title": "Functions & Modules", "sort_order": 2, "lessons": [
+                {"title": "Defining Functions", "sort_order": 0, "description": "<p>Create reusable code blocks with <code>def</code>. Understand parameters, return values, and scope.</p>"},
+                {"title": "Working with Modules", "sort_order": 1, "description": "<p>Organize code into modules. Import built-in and third-party packages. Create your own modules.</p>"},
+            ]},
         ],
     },
     {
-        "title": "Web Development Basics",
-        "description": (
-            "Get started with web development. Learn HTML, CSS, and "
-            "JavaScript fundamentals to build interactive web pages."
-        ),
+        "title": "Web Development with HTML & CSS",
+        "description": "Build beautiful, responsive websites from scratch. Master HTML5 structure, CSS3 styling, Flexbox, and Grid layouts.",
+        "is_free": True,
         "modules": [
-            {
-                "title": "HTML & CSS",
-                "sort_order": 0,
-                "lessons": [
-                    {
-                        "title": "HTML Structure",
-                        "description": (
-                            "Learn the building blocks of every web page. "
-                            "Understand tags, elements, attributes, and "
-                            "the document structure."
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=UB1O30fR-EE",
-                        "sort_order": 0,
-                    },
-                    {
-                        "title": "CSS Selectors",
-                        "description": (
-                            "Style your pages with CSS. Master selectors, "
-                            "specificity, and the cascade to control layout "
-                            "and appearance."
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=1PnVor36_40",
-                        "sort_order": 1,
-                    },
-                    {
-                        "title": "Flexbox Layout",
-                        "description": (
-                            "Build flexible, responsive layouts with Flexbox. "
-                            "Align and distribute space among items in a "
-                            "container."
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=JJSoEo8JSnc",
-                        "sort_order": 2,
-                    },
-                ],
-            },
-            {
-                "title": "JavaScript",
-                "sort_order": 1,
-                "lessons": [
-                    {
-                        "title": "Variables & Scope",
-                        "description": (
-                            "Declare variables with let, const, and var. "
-                            "Understand block scope, function scope, and "
-                            "hoisting."
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=W6NZfCJ1zes",
-                        "sort_order": 0,
-                    },
-                    {
-                        "title": "DOM Manipulation",
-                        "description": (
-                            "Access and modify HTML elements with JavaScript. "
-                            "Use querySelector, textContent, and classList."
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=y17RuWkWdn8",
-                        "sort_order": 1,
-                    },
-                    {
-                        "title": "Event Handling",
-                        "description": (
-                            "Respond to user interactions with event listeners. "
-                            "Handle clicks, form submissions, and keyboard "
-                            "events."
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=XF1_MlZ5l6M",
-                        "sort_order": 2,
-                    },
-                ],
-            },
+            {"title": "HTML Foundations", "sort_order": 0, "lessons": [
+                {"title": "HTML Document Structure", "sort_order": 0, "video_url": "https://www.youtube.com/watch?v=UB1O30fR-EE", "description": "<h2>The Building Blocks</h2><p>Every web page starts with HTML. Learn the <code>&lt;html&gt;</code>, <code>&lt;head&gt;</code>, and <code>&lt;body&gt;</code> tags that form the skeleton of every page.</p>"},
+                {"title": "Text, Links & Images", "sort_order": 1, "description": "<p>Add headings, paragraphs, hyperlinks, and images. Understand semantic HTML elements like <code>&lt;article&gt;</code> and <code>&lt;section&gt;</code>.</p>"},
+                {"title": "Forms & Input Elements", "sort_order": 2, "description": "<p>Build interactive forms with text inputs, checkboxes, radio buttons, and submit buttons. Add validation attributes.</p>"},
+            ]},
+            {"title": "CSS Styling", "sort_order": 1, "lessons": [
+                {"title": "Selectors & Properties", "sort_order": 0, "description": "<p>Target elements with CSS selectors. Apply colors, fonts, spacing, and borders to style your pages.</p>"},
+                {"title": "Flexbox Layout", "sort_order": 1, "description": "<p>Build flexible, one-dimensional layouts with Flexbox. Align and distribute space between items in a container.</p>"},
+                {"title": "CSS Grid", "sort_order": 2, "description": "<p>Create two-dimensional page layouts with CSS Grid. Define rows, columns, and grid areas for complex designs.</p>"},
+                {"title": "Responsive Design", "sort_order": 3, "description": "<p>Make your websites look great on any device. Use media queries, relative units, and mobile-first design principles.</p>"},
+            ]},
+        ],
+    },
+    {
+        "title": "JavaScript Essentials",
+        "description": "Learn JavaScript from the ground up. Master variables, functions, DOM manipulation, async programming, and modern ES6+ syntax.",
+        "is_free": False,
+        "modules": [
+            {"title": "JavaScript Basics", "sort_order": 0, "lessons": [
+                {"title": "Variables & Data Types", "sort_order": 0, "description": "<p>Declare variables with <code>let</code>, <code>const</code>, and <code>var</code>. Understand strings, numbers, booleans, arrays, and objects.</p>"},
+                {"title": "Functions & Arrow Functions", "sort_order": 1, "description": "<p>Write reusable code with functions. Learn arrow function syntax, default parameters, and rest/spread operators.</p>"},
+                {"title": "Arrays & Objects", "sort_order": 2, "description": "<p>Work with arrays using <code>map()</code>, <code>filter()</code>, <code>reduce()</code>. Access and modify object properties.</p>"},
+            ]},
+            {"title": "DOM & Events", "sort_order": 1, "lessons": [
+                {"title": "Selecting & Modifying Elements", "sort_order": 0, "description": "<p>Use <code>querySelector</code> and <code>getElementById</code> to access HTML elements. Modify text, attributes, and styles with JavaScript.</p>"},
+                {"title": "Event Handling", "sort_order": 1, "description": "<p>Respond to user actions with event listeners. Handle clicks, form submissions, keyboard events, and more.</p>"},
+                {"title": "Dynamic Content", "sort_order": 2, "description": "<p>Create, remove, and update DOM elements dynamically. Build interactive UIs without page reloads.</p>"},
+            ]},
+            {"title": "Async JavaScript", "sort_order": 2, "lessons": [
+                {"title": "Promises & Fetch API", "sort_order": 0, "description": "<p>Make HTTP requests with the Fetch API. Handle responses with Promises and <code>.then()</code> chains.</p>"},
+                {"title": "Async/Await", "sort_order": 1, "description": "<p>Write cleaner async code with <code>async</code>/<code>await</code>. Handle errors with try/catch blocks.</p>"},
+            ]},
+        ],
+    },
+    {
+        "title": "Git & Version Control",
+        "description": "Master Git version control and GitHub collaboration. Essential skills for every developer working in a team.",
+        "is_free": True,
+        "modules": [
+            {"title": "Git Basics", "sort_order": 0, "lessons": [
+                {"title": "Installing & Configuring Git", "sort_order": 0, "description": "<p>Set up Git on your machine. Configure your identity with <code>git config</code> for commits.</p>"},
+                {"title": "Init, Add, Commit", "sort_order": 1, "description": "<h2>The Core Workflow</h2><ol><li><code>git init</code> - Initialize a repository</li><li><code>git add</code> - Stage your changes</li><li><code>git commit</code> - Save a snapshot</li></ol>"},
+                {"title": "Branching & Merging", "sort_order": 2, "description": "<p>Work on features in isolation with branches. Merge changes back and resolve conflicts when they arise.</p>"},
+            ]},
+            {"title": "GitHub Collaboration", "sort_order": 1, "lessons": [
+                {"title": "Remote Repositories", "sort_order": 0, "description": "<p>Push to and pull from GitHub. Manage remote repositories and keep your local copy in sync.</p>"},
+                {"title": "Pull Requests & Code Review", "sort_order": 1, "description": "<p>Collaborate using pull requests. Review code, leave comments, and merge changes with confidence.</p>"},
+            ]},
         ],
     },
     {
         "title": "Data Science with Python",
-        "description": (
-            "Master data analysis, visualization, and machine learning "
-            "fundamentals using Python, Pandas, and Scikit-learn."
-        ),
+        "description": "Analyze data, create visualizations, and build machine learning models using Python, Pandas, Matplotlib, and Scikit-learn.",
         "is_free": False,
         "modules": [
-            {
-                "title": "Data Analysis with Pandas",
-                "sort_order": 0,
-                "lessons": [
-                    {
-                        "title": "Introduction to Pandas",
-                        "description": (
-                            "<h2>What is Pandas?</h2>"
-                            "<p>Pandas is a powerful Python library for data manipulation "
-                            "and analysis. It provides data structures like <strong>DataFrame</strong> "
-                            "and <strong>Series</strong> that make working with structured data intuitive.</p>"
-                            "<ul><li>Reading CSV, Excel, and JSON files</li>"
-                            "<li>Filtering and sorting data</li>"
-                            "<li>Handling missing values</li></ul>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=vmEHCJofslg",
-                        "sort_order": 0,
-                    },
-                    {
-                        "title": "DataFrames & Series",
-                        "description": (
-                            "<h2>Core Data Structures</h2>"
-                            "<p>Learn how to create, manipulate, and transform DataFrames. "
-                            "Understand indexing, slicing, and column operations.</p>"
-                            "<ol><li>Creating DataFrames from dictionaries</li>"
-                            "<li>Selecting rows and columns</li>"
-                            "<li>Adding and removing columns</li>"
-                            "<li>Merging and joining DataFrames</li></ol>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=zmdjNSmRXF4",
-                        "sort_order": 1,
-                    },
-                    {
-                        "title": "Data Cleaning Techniques",
-                        "description": (
-                            "<p>Real-world data is messy. Learn how to clean and prepare "
-                            "datasets for analysis using Pandas built-in methods.</p>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=ZOX18HfLHGQ",
-                        "sort_order": 2,
-                    },
-                ],
-            },
-            {
-                "title": "Data Visualization",
-                "sort_order": 1,
-                "lessons": [
-                    {
-                        "title": "Matplotlib Basics",
-                        "description": (
-                            "<p>Create beautiful charts and plots with Matplotlib. "
-                            "Learn line plots, bar charts, histograms, and scatter plots.</p>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=UO98lJQ3QGI",
-                        "sort_order": 0,
-                    },
-                    {
-                        "title": "Advanced Visualizations with Seaborn",
-                        "description": (
-                            "<p>Seaborn provides a high-level interface for creating "
-                            "statistical graphics. Learn heatmaps, pair plots, and more.</p>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=6GUZXDef2U0",
-                        "sort_order": 1,
-                    },
-                ],
-            },
-            {
-                "title": "Machine Learning Intro",
-                "sort_order": 2,
-                "lessons": [
-                    {
-                        "title": "What is Machine Learning?",
-                        "description": (
-                            "<h2>ML Fundamentals</h2>"
-                            "<p>Understand the three types of machine learning:</p>"
-                            "<ul><li><strong>Supervised Learning</strong> - Learn from labeled data</li>"
-                            "<li><strong>Unsupervised Learning</strong> - Find patterns in unlabeled data</li>"
-                            "<li><strong>Reinforcement Learning</strong> - Learn through rewards</li></ul>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=ukzFI9rgwfU",
-                        "sort_order": 0,
-                    },
-                    {
-                        "title": "Linear Regression",
-                        "description": (
-                            "<p>Build your first ML model with Scikit-learn. "
-                            "Understand training, testing, and model evaluation.</p>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=nk2CQITm_eo",
-                        "sort_order": 1,
-                    },
-                ],
-            },
-        ],
-    },
-    {
-        "title": "Git & GitHub Essentials",
-        "description": (
-            "Learn version control with Git and collaboration with GitHub. "
-            "Essential skills for every developer."
-        ),
-        "is_free": True,
-        "modules": [
-            {
-                "title": "Git Basics",
-                "sort_order": 0,
-                "lessons": [
-                    {
-                        "title": "Installing & Configuring Git",
-                        "description": (
-                            "<p>Set up Git on your machine and configure your "
-                            "identity for commits.</p>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=USjZcfj8yxE",
-                        "sort_order": 0,
-                    },
-                    {
-                        "title": "Your First Repository",
-                        "description": (
-                            "<h2>Init, Add, Commit</h2>"
-                            "<p>Learn the fundamental Git workflow:</p>"
-                            "<ol><li><code>git init</code> - Initialize a repo</li>"
-                            "<li><code>git add</code> - Stage changes</li>"
-                            "<li><code>git commit</code> - Save a snapshot</li></ol>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=HVsySz-h9r4",
-                        "sort_order": 1,
-                    },
-                    {
-                        "title": "Branching & Merging",
-                        "description": (
-                            "<p>Work on features in isolation with branches, "
-                            "then merge them back. Resolve merge conflicts.</p>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=JTE2Fn_sCZs",
-                        "sort_order": 2,
-                    },
-                ],
-            },
-            {
-                "title": "GitHub Collaboration",
-                "sort_order": 1,
-                "lessons": [
-                    {
-                        "title": "Push, Pull & Remote Repos",
-                        "description": (
-                            "<p>Connect your local repo to GitHub. Push changes, "
-                            "pull updates, and manage remote repositories.</p>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=nhNq2kIvi9s",
-                        "sort_order": 0,
-                    },
-                    {
-                        "title": "Pull Requests & Code Review",
-                        "description": (
-                            "<p>Collaborate with teams using pull requests. "
-                            "Learn code review best practices and GitHub workflows.</p>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=rgbCcBNZcdQ",
-                        "sort_order": 1,
-                    },
-                ],
-            },
-        ],
-    },
-    {
-        "title": "React.js for Beginners",
-        "description": (
-            "Build modern user interfaces with React. Learn components, "
-            "hooks, state management, and routing."
-        ),
-        "is_free": False,
-        "modules": [
-            {
-                "title": "React Fundamentals",
-                "sort_order": 0,
-                "lessons": [
-                    {
-                        "title": "What is React?",
-                        "description": (
-                            "<h2>Modern UI Development</h2>"
-                            "<p>React is a JavaScript library for building user interfaces. "
-                            "Learn about the <strong>virtual DOM</strong>, "
-                            "<strong>JSX syntax</strong>, and component-based architecture.</p>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=Tn6-PIqc4UM",
-                        "sort_order": 0,
-                    },
-                    {
-                        "title": "Components & Props",
-                        "description": (
-                            "<p>Build reusable UI components and pass data between them "
-                            "using props. Understand the component lifecycle.</p>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=Cla1WwguArA",
-                        "sort_order": 1,
-                    },
-                    {
-                        "title": "State & Events",
-                        "description": (
-                            "<p>Make your components interactive with state. Handle "
-                            "user events like clicks, form inputs, and keyboard actions.</p>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=4pO-HcG2igk",
-                        "sort_order": 2,
-                    },
-                ],
-            },
-            {
-                "title": "React Hooks",
-                "sort_order": 1,
-                "lessons": [
-                    {
-                        "title": "useState & useEffect",
-                        "description": (
-                            "<p>Master the two most important React hooks for "
-                            "managing state and side effects in functional components.</p>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=O6P86uwfdR0",
-                        "sort_order": 0,
-                    },
-                    {
-                        "title": "Custom Hooks",
-                        "description": (
-                            "<p>Extract and share logic between components by creating "
-                            "your own custom hooks. Write cleaner, more reusable code.</p>"
-                        ),
-                        "video_url": "https://www.youtube.com/watch?v=J-g9ZJha8FE",
-                        "sort_order": 1,
-                    },
-                ],
-            },
+            {"title": "Data Analysis with Pandas", "sort_order": 0, "lessons": [
+                {"title": "Introduction to Pandas", "sort_order": 0, "description": "<h2>What is Pandas?</h2><p>A powerful library for data manipulation. Work with <strong>DataFrames</strong> and <strong>Series</strong> to analyze structured data.</p><ul><li>Reading CSV, Excel, JSON files</li><li>Filtering and sorting data</li><li>Handling missing values</li></ul>"},
+                {"title": "Data Cleaning", "sort_order": 1, "description": "<p>Real-world data is messy. Learn to handle missing values, duplicates, and type conversions with Pandas.</p>"},
+                {"title": "Grouping & Aggregation", "sort_order": 2, "description": "<p>Summarize data with <code>groupby()</code>, <code>agg()</code>, and pivot tables. Extract insights from large datasets.</p>"},
+            ]},
+            {"title": "Data Visualization", "sort_order": 1, "lessons": [
+                {"title": "Charts with Matplotlib", "sort_order": 0, "description": "<p>Create line plots, bar charts, histograms, and scatter plots. Customize colors, labels, and legends.</p>"},
+                {"title": "Statistical Plots with Seaborn", "sort_order": 1, "description": "<p>Build beautiful statistical visualizations. Heatmaps, box plots, pair plots, and distribution charts.</p>"},
+            ]},
+            {"title": "Machine Learning Basics", "sort_order": 2, "lessons": [
+                {"title": "Supervised vs Unsupervised Learning", "sort_order": 0, "description": "<h2>ML Fundamentals</h2><ul><li><strong>Supervised</strong>: Learn from labeled data (classification, regression)</li><li><strong>Unsupervised</strong>: Find patterns in unlabeled data (clustering)</li></ul>"},
+                {"title": "Building Your First Model", "sort_order": 1, "description": "<p>Use Scikit-learn to build a linear regression model. Split data into training and testing sets. Evaluate with metrics.</p>"},
+            ]},
         ],
     },
 ]
@@ -498,11 +148,11 @@ def seed():
                 db.flush()
                 batch_map[batch.name] = batch.id
             db.commit()
-            print("Seeded 2 demo batches.")
+            print(f"Seeded {len(DEMO_BATCHES)} batches.")
         else:
             for b in db.query(Batch).all():
                 batch_map[b.name] = b.id
-            print("Batches already exist. Skipping batch seed.")
+            print("Batches already exist. Skipping.")
 
         # Seed users
         existing_user = db.query(User).first()
@@ -512,6 +162,7 @@ def seed():
                     email=user_data["email"],
                     password_hash=hash_password(user_data["password"]),
                     name=user_data["name"],
+                    mobile=user_data.get("mobile"),
                     role=user_data["role"],
                     batch_id=batch_map.get("July-2026")
                     if user_data["role"] == "learner"
@@ -519,9 +170,9 @@ def seed():
                 )
                 db.add(user)
             db.commit()
-            print("Seeded 3 demo users.")
+            print(f"Seeded {len(DEMO_USERS)} users.")
         else:
-            print("Users already exist. Skipping user seed.")
+            print("Users already exist. Skipping.")
 
         # Seed courses
         existing = db.query(Course).first()
@@ -543,7 +194,7 @@ def seed():
                 for lesson_data in module_data["lessons"]:
                     lesson = Lesson(
                         title=lesson_data["title"],
-                        description=lesson_data["description"],
+                        description=lesson_data.get("description"),
                         video_url=lesson_data.get("video_url"),
                         sort_order=lesson_data["sort_order"],
                     )
@@ -552,7 +203,10 @@ def seed():
             db.add(course)
 
         db.commit()
-        print("Database seeded successfully with 2 courses.")
+        total_lessons = sum(
+            len(l) for c in SEED_DATA for m in c["modules"] for l in [m["lessons"]]
+        )
+        print(f"Seeded {len(SEED_DATA)} courses with {total_lessons} lessons.")
     finally:
         db.close()
 

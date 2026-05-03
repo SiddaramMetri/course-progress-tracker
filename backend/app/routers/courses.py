@@ -52,6 +52,29 @@ def get_course(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    from app.models import Course as CourseModel
+    from app.services import admin_service
+
+    # Access control: check if user can access this course
+    if user.role != "admin":
+        course_obj = (
+            db.query(CourseModel).filter(CourseModel.id == course_id).first()
+        )
+        if not course_obj:
+            raise HTTPException(status_code=404, detail="Course not found")
+
+        # Free courses: anyone can access
+        if not course_obj.is_free:
+            # Premium: must have batch AND course must be published to batch
+            available_ids = admin_service.get_learner_available_courses(
+                db, user.id, user.batch_id
+            )
+            if course_id not in available_ids:
+                raise HTTPException(
+                    status_code=403,
+                    detail="You don't have access to this course. Request access from the course page.",
+                )
+
     course = course_service.get_course_detail(
         db, course_id, str(user.id)
     )
@@ -60,8 +83,6 @@ def get_course(
 
     # For learners, mark locked modules with unlock dates
     if user.role != "admin" and user.batch_id:
-        from app.services import admin_service
-
         schedule_map = admin_service.get_module_schedule_map(
             db, user.batch_id, course_id
         )
@@ -70,7 +91,6 @@ def get_course(
             if sched and not sched["is_unlocked"]:
                 module.is_locked = True
                 module.unlock_date = str(sched["unlock_date"])
-                # Show lesson titles but strip sensitive content
                 for lesson in module.lessons:
                     lesson.description = None
                     lesson.video_url = None

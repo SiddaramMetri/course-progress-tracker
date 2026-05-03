@@ -70,7 +70,7 @@ export function AppSidebar() {
           <p className="px-2 mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Menu
           </p>
-          {navItem("/", <LayoutDashboard className="h-4 w-4" />, "Dashboard")}
+          {navItem("/dashboard", <LayoutDashboard className="h-4 w-4" />, "Dashboard")}
           {navItem(
             "/account",
             <UserCircle className="h-4 w-4" />,

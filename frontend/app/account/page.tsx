@@ -133,7 +133,7 @@ export default function AccountPage() {
         <div className="rounded-xl border p-6 space-y-4">
           <h2 className="text-sm font-semibold">Account Details</h2>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`grid gap-4 ${user?.batch_name ? "grid-cols-2" : "grid-cols-1"}`}>
             <div className="rounded-lg bg-muted/30 p-3">
               <p className="text-xs text-muted-foreground mb-1">Role</p>
               <Badge
@@ -144,14 +144,12 @@ export default function AccountPage() {
               </Badge>
             </div>
 
-            <div className="rounded-lg bg-muted/30 p-3">
-              <p className="text-xs text-muted-foreground mb-1">Batch</p>
-              {user?.batch_name ? (
+            {user?.batch_name && (
+              <div className="rounded-lg bg-muted/30 p-3">
+                <p className="text-xs text-muted-foreground mb-1">Batch</p>
                 <Badge variant="outline">{user.batch_name}</Badge>
-              ) : (
-                <span className="text-sm text-muted-foreground">None</span>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           {user?.batch_start && user?.batch_end && (

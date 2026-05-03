@@ -204,3 +204,88 @@ def unpublish_course(
     """Remove a published course from a batch."""
     if not admin_service.unpublish_course_from_batch(db, batch_course_id):
         raise HTTPException(status_code=404, detail="Not found")
+
+
+# --- Access Requests ---
+
+
+@router.get("/access-requests")
+def list_access_requests(
+    db: Session = Depends(get_db),
+    _admin: User = Depends(require_admin),
+):
+    """List all pending access requests."""
+    from app.models import AccessRequest
+
+    requests = (
+        db.query(AccessRequest)
+        .order_by(AccessRequest.created_at.desc())
+        .all()
+    )
+    return [
+        {
+            "id": str(r.id),
+            "user_id": str(r.user_id),
+            "user_name": r.user.name if r.user else "Unknown",
+            "user_email": r.user.email if r.user else "",
+            "course_id": str(r.course_id),
+            "course_title": r.course.title if r.course else "Unknown",
+            "status": r.status,
+            "message": r.message,
+            "created_at": r.created_at.isoformat(),
+        }
+        for r in requests
+    ]
+
+
+@router.post("/access-requests/{request_id}/approve")
+def approve_access_request(
+    request_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(require_admin),
+):
+    """Approve an access request - assign user to a batch if they don't have one."""
+    from app.models import AccessRequest, Notification
+
+    req = db.query(AccessRequest).filter(AccessRequest.id == request_id).first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    req.status = "approved"
+
+    # Send notification to user
+    notif = Notification(
+        user_id=req.user_id,
+        title="Access Approved!",
+        message=f"Your request to access '{req.course.title}' has been approved.",
+    )
+    db.add(notif)
+    db.commit()
+
+    return {"status": "approved"}
+
+
+@router.post("/access-requests/{request_id}/reject")
+def reject_access_request(
+    request_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(require_admin),
+):
+    """Reject an access request."""
+    from app.models import AccessRequest, Notification
+
+    req = db.query(AccessRequest).filter(AccessRequest.id == request_id).first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    req.status = "rejected"
+
+    notif = Notification(
+        user_id=req.user_id,
+        title="Access Request Update",
+        message=f"Your request to access '{req.course.title}' was not approved at this time.",
+    )
+    db.add(notif)
+    db.commit()
+
+    return {"status": "rejected"}

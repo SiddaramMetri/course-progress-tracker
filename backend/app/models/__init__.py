@@ -1,3 +1,4 @@
+from app.models.access_request import AccessRequest
 from app.models.attachment import Attachment
 from app.models.batch import Batch
 from app.models.batch_course import BatchCourse, BatchModuleSchedule
@@ -8,6 +9,7 @@ from app.models.session import Session
 from app.models.user import User
 
 __all__ = [
+    "AccessRequest",
     "Attachment",
     "Batch",
     "BatchCourse",
