@@ -74,7 +74,7 @@ export function AppSidebar() {
       <div className="flex h-14 items-center gap-2 px-4 border-b">
         <GraduationCap className="h-5 w-5 text-primary" />
         <span className="font-semibold text-sm tracking-tight">
-          Course Tracker
+          BatchLearn
         </span>
       </div>
 

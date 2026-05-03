@@ -11,8 +11,8 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Course Progress Tracker",
-  description: "Track your learning progress across courses",
+  title: "BatchLearn",
+  description: "Batch-based learning management system for structured course delivery",
 };
 
 export default function RootLayout({

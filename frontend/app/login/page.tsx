@@ -104,7 +104,7 @@ function LoginForm() {
             <GraduationCap className="h-6 w-6" />
           </div>
           <h1 className="text-xl font-semibold tracking-tight">
-            Course Progress Tracker
+            BatchLearn
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Sign in to continue

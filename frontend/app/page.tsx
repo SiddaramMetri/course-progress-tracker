@@ -66,7 +66,7 @@ export default function LandingPage() {
           <Link href="/" className="flex items-center gap-2">
             <GraduationCap className="h-6 w-6 text-primary" />
             <span className="font-bold text-lg tracking-tight">
-              Course Tracker
+              BatchLearn
             </span>
           </Link>
           <nav className="flex items-center gap-3">
@@ -300,7 +300,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-6 py-8 flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <GraduationCap className="h-4 w-4" />
-            Course Tracker
+            BatchLearn
           </div>
           <p>Built with Next.js, FastAPI & PostgreSQL</p>
         </div>

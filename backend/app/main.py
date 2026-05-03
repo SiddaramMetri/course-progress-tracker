@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.routers import admin, attachments, auth, courses, notifications, progress, public
 
-app = FastAPI(title="Course Progress Tracker", version="1.0.0")
+app = FastAPI(title="BatchLearn", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
