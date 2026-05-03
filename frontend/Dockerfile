@@ -10,8 +10,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build-time env (override at runtime via docker run -e)
-ENV NEXT_PUBLIC_API_URL=http://localhost:8000/api
+# Reads NEXT_PUBLIC_API_URL from .env.local at build time
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
