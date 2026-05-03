@@ -1,53 +1,91 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
+
 import { apiFetch } from "@/lib/api";
+import { queryKeys } from "@/lib/query-keys";
 import type { CourseInput, LessonInput, ModuleInput } from "@/types";
 
 export function useAdmin() {
+  const queryClient = useQueryClient();
+
+  const invalidateCourses = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.courses.all });
+  }, [queryClient]);
+
   return {
-    createCourse: (data: CourseInput) =>
-      apiFetch("/courses", {
+    createCourse: async (data: CourseInput) => {
+      const result = await apiFetch("/courses", {
         method: "POST",
         body: JSON.stringify(data),
-      }),
+      });
+      invalidateCourses();
+      return result;
+    },
 
-    updateCourse: (id: string, data: Partial<CourseInput>) =>
-      apiFetch(`/courses/${id}`, {
+    updateCourse: async (id: string, data: Partial<CourseInput>) => {
+      const result = await apiFetch(`/courses/${id}`, {
         method: "PUT",
         body: JSON.stringify(data),
-      }),
+      });
+      invalidateCourses();
+      queryClient.invalidateQueries({ queryKey: queryKeys.courses.detail(id) });
+      return result;
+    },
 
-    deleteCourse: (id: string) =>
-      apiFetch(`/courses/${id}`, { method: "DELETE" }),
+    deleteCourse: async (id: string) => {
+      await apiFetch(`/courses/${id}`, { method: "DELETE" });
+      invalidateCourses();
+    },
 
-    createModule: (courseId: string, data: ModuleInput) =>
-      apiFetch(`/courses/${courseId}/modules`, {
+    createModule: async (courseId: string, data: ModuleInput) => {
+      const result = await apiFetch(`/courses/${courseId}/modules`, {
         method: "POST",
         body: JSON.stringify(data),
-      }),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.courses.detail(courseId),
+      });
+      return result;
+    },
 
-    updateModule: (id: string, data: Partial<ModuleInput>) =>
-      apiFetch(`/modules/${id}`, {
+    updateModule: async (id: string, data: Partial<ModuleInput>) => {
+      const result = await apiFetch(`/modules/${id}`, {
         method: "PUT",
         body: JSON.stringify(data),
-      }),
+      });
+      // Invalidate all course details since we don't know which course
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      return result;
+    },
 
-    deleteModule: (id: string) =>
-      apiFetch(`/modules/${id}`, { method: "DELETE" }),
+    deleteModule: async (id: string) => {
+      await apiFetch(`/modules/${id}`, { method: "DELETE" });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+    },
 
-    createLesson: (moduleId: string, data: LessonInput) =>
-      apiFetch(`/modules/${moduleId}/lessons`, {
+    createLesson: async (moduleId: string, data: LessonInput) => {
+      const result = await apiFetch(`/modules/${moduleId}/lessons`, {
         method: "POST",
         body: JSON.stringify(data),
-      }),
+      });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      return result;
+    },
 
-    updateLesson: (id: string, data: Partial<LessonInput>) =>
-      apiFetch(`/lessons/${id}`, {
+    updateLesson: async (id: string, data: Partial<LessonInput>) => {
+      const result = await apiFetch(`/lessons/${id}`, {
         method: "PUT",
         body: JSON.stringify(data),
-      }),
+      });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      return result;
+    },
 
-    deleteLesson: (id: string) =>
-      apiFetch(`/lessons/${id}`, { method: "DELETE" }),
+    deleteLesson: async (id: string) => {
+      await apiFetch(`/lessons/${id}`, { method: "DELETE" });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+    },
   };
 }

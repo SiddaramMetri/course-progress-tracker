@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import {
   Calendar,
   ChevronRight,
@@ -275,7 +276,7 @@ function PublishCourseDialog({
       setOpen(false);
       onSuccess();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to publish");
+      toast.error(err instanceof Error ? err.message : "Failed to publish");
     } finally {
       setSaving(false);
     }
@@ -431,9 +432,14 @@ export default function AdminBatchesPage() {
   }, [fetchBatches]);
 
   const handleDelete = async (batchId: string) => {
-    if (!confirm("Delete this batch? Students will be unassigned.")) return;
-    await apiFetch(`/admin/batches/${batchId}`, { method: "DELETE" });
-    fetchBatches();
+    if (!window.confirm("Delete this batch? Students will be unassigned.")) return;
+    try {
+      await apiFetch(`/admin/batches/${batchId}`, { method: "DELETE" });
+      toast.success("Batch deleted");
+      fetchBatches();
+    } catch {
+      toast.error("Failed to delete batch");
+    }
   };
 
   const openDetail = async (batchId: string) => {
@@ -454,11 +460,16 @@ export default function AdminBatchesPage() {
   };
 
   const handleUnpublish = async (batchCourseId: string) => {
-    if (!confirm("Remove this course from the batch?")) return;
-    await apiFetch(`/admin/batches/courses/${batchCourseId}`, {
-      method: "DELETE",
-    });
-    refreshDetail();
+    if (!window.confirm("Remove this course from the batch?")) return;
+    try {
+      await apiFetch(`/admin/batches/courses/${batchCourseId}`, {
+        method: "DELETE",
+      });
+      toast.success("Course unpublished from batch");
+      refreshDetail();
+    } catch {
+      toast.error("Failed to unpublish course");
+    }
   };
 
   const handleScheduleChange = async (

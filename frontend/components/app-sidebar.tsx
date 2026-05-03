@@ -23,10 +23,8 @@ import { CourseProgress } from "./course-progress";
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const { courses } = useCourses();
-
-  const isAdmin = user?.role === "admin";
   const totalLessons = courses.reduce((s, c) => s + c.total_count, 0);
   const totalCompleted = courses.reduce((s, c) => s + c.completed_count, 0);
 

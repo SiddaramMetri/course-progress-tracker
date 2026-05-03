@@ -19,10 +19,23 @@ function getAuthHeaders(): Record<string, string> {
   return {};
 }
 
-function clearAuthAndRedirect() {
+function clearAuthAndRedirect(reason?: string) {
   localStorage.removeItem(STORAGE_KEY);
   if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-    window.location.href = "/login";
+    const url = reason
+      ? `/login?error=${encodeURIComponent(reason)}`
+      : "/login";
+    window.location.href = url;
+  }
+}
+
+/** Parse API error response - extract detail from JSON or return raw */
+function parseApiError(body: string): string {
+  try {
+    const parsed = JSON.parse(body);
+    return parsed.detail || body;
+  } catch {
+    return body || "Unknown error";
   }
 }
 
@@ -90,7 +103,7 @@ export async function apiFetch<T>(
       }
 
       const message = await retryRes.text().catch(() => "Unknown error");
-      throw new Error(`API error ${retryRes.status}: ${message}`);
+      throw new Error(parseApiError(message));
     }
 
     // Refresh failed - clear auth and redirect to login
@@ -98,9 +111,19 @@ export async function apiFetch<T>(
     throw new Error("Session expired. Please login again.");
   }
 
+  // Auto-logout on 403 "blocked"
+  if (res.status === 403) {
+    const body = await res.text().catch(() => "");
+    if (body.includes("blocked")) {
+      clearAuthAndRedirect("Your account has been blocked.");
+      throw new Error("Account is blocked");
+    }
+    throw new Error(parseApiError(body));
+  }
+
   if (!res.ok) {
     const message = await res.text().catch(() => "Unknown error");
-    throw new Error(`API error ${res.status}: ${message}`);
+    throw new Error(parseApiError(message));
   }
 
   if (res.status === 204) return undefined as T;

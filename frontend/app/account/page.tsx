@@ -9,11 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth, type Role } from "@/hooks/use-auth";
 import { apiFetch } from "@/lib/api";
 
 export default function AccountPage() {
-  const { user, login } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [name, setName] = useState(user?.name ?? "");
   const [mobile, setMobile] = useState(user?.mobile ?? "");
   const [saving, setSaving] = useState(false);
@@ -137,7 +137,7 @@ export default function AccountPage() {
             <div className="rounded-lg bg-muted/30 p-3">
               <p className="text-xs text-muted-foreground mb-1">Role</p>
               <Badge
-                variant={user?.role === "admin" ? "default" : "secondary"}
+                variant={isAdmin ? "default" : "secondary"}
                 className="capitalize"
               >
                 {user?.role}

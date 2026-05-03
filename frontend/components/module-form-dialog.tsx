@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -65,7 +66,10 @@ export function ModuleFormDialog({
         });
       }
       setOpen(false);
+      toast.success(mode === "create" ? "Module created" : "Module updated");
       onSuccess();
+    } catch {
+      toast.error("Failed to save module");
     } finally {
       setSaving(false);
     }

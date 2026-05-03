@@ -1,62 +1,51 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 
 import { apiFetch, apiUpload } from "@/lib/api";
+import { queryKeys } from "@/lib/query-keys";
 import type { AttachmentOut } from "@/types";
 
 export function useAttachments(lessonId: string | null) {
-  const [attachments, setAttachments] = useState<AttachmentOut[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const queryClient = useQueryClient();
 
-  const fetchAttachments = useCallback(async () => {
-    if (!lessonId) return;
-    setLoading(true);
-    try {
-      const data = await apiFetch<AttachmentOut[]>(
-        `/lessons/${lessonId}/attachments`
-      );
-      setAttachments(data);
-    } finally {
-      setLoading(false);
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.attachments.byLesson(lessonId ?? ""),
+    queryFn: () => apiFetch<AttachmentOut[]>(`/lessons/${lessonId}/attachments`),
+    enabled: !!lessonId,
+  });
+
+  const invalidate = useCallback(() => {
+    if (lessonId) {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.attachments.byLesson(lessonId),
+      });
     }
-  }, [lessonId]);
+  }, [queryClient, lessonId]);
 
-  useEffect(() => {
-    fetchAttachments();
-  }, [fetchAttachments]);
-
-  const upload = useCallback(
-    async (file: File) => {
-      if (!lessonId) return;
-      setUploading(true);
-      try {
-        await apiUpload(`/lessons/${lessonId}/attachments`, file);
-        await fetchAttachments();
-      } finally {
-        setUploading(false);
-      }
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File): Promise<void> => {
+      await apiUpload(`/lessons/${lessonId}/attachments`, file);
     },
-    [lessonId, fetchAttachments]
-  );
+    onSuccess: invalidate,
+  });
 
-  const remove = useCallback(
-    async (attachmentId: string) => {
+  const removeMutation = useMutation({
+    mutationFn: async (attachmentId: string): Promise<void> => {
       await apiFetch(`/lessons/attachments/${attachmentId}`, {
         method: "DELETE",
       });
-      await fetchAttachments();
     },
-    [fetchAttachments]
-  );
+    onSuccess: invalidate,
+  });
 
   return {
-    attachments,
-    loading,
-    uploading,
-    upload,
-    remove,
-    refetch: fetchAttachments,
+    attachments: data ?? [],
+    loading: isLoading,
+    uploading: uploadMutation.isPending,
+    upload: uploadMutation.mutateAsync,
+    remove: removeMutation.mutateAsync,
+    refetch: invalidate,
   };
 }

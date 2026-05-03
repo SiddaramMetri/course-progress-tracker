@@ -1,12 +1,12 @@
 "use client";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, BellOff, Check, CheckCheck } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
+import { queryKeys } from "@/lib/query-keys";
 
 interface Notification {
   id: string;
@@ -27,34 +27,32 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchNotifications = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await apiFetch<Notification[]>("/notifications");
-      setNotifications(data);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { data: notifications, isLoading } = useQuery({
+    queryKey: queryKeys.notifications.all,
+    queryFn: () => apiFetch<Notification[]>("/notifications"),
+  });
 
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.notifications.unreadCount,
+    });
+  };
 
   const handleMarkRead = async (id: string) => {
     await apiFetch(`/notifications/${id}/read`, { method: "POST" });
-    fetchNotifications();
+    invalidate();
   };
 
   const handleMarkAllRead = async () => {
     await apiFetch("/notifications/read-all", { method: "POST" });
-    fetchNotifications();
+    invalidate();
   };
 
-  const unread = notifications.filter((n) => !n.is_read).length;
+  const items = notifications ?? [];
+  const unread = items.filter((n) => !n.is_read).length;
 
   return (
     <AppShell>
@@ -81,22 +79,24 @@ export default function NotificationsPage() {
           )}
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <div className="text-center py-12 text-muted-foreground">
             Loading...
           </div>
-        ) : notifications.length === 0 ? (
+        ) : items.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16 text-center">
             <BellOff className="h-10 w-10 text-muted-foreground/30" />
             <p className="text-muted-foreground">No notifications yet.</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {notifications.map((notif) => (
+            {items.map((notif) => (
               <div
                 key={notif.id}
                 className={`rounded-lg border p-4 transition-colors ${
-                  notif.is_read ? "bg-background" : "bg-primary/5 border-primary/20"
+                  notif.is_read
+                    ? "bg-background"
+                    : "bg-primary/5 border-primary/20"
                 }`}
               >
                 <div className="flex items-start gap-3">

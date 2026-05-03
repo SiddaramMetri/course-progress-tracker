@@ -3,8 +3,11 @@
 import { Play, Upload, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { useConfirm } from "@/hooks/use-confirm";
 import { apiFetch, apiUpload } from "@/lib/api";
 
 interface VideoPlayerProps {
@@ -32,8 +35,8 @@ export function VideoPlayer({
   lessonId,
   onVideoChange,
 }: VideoPlayerProps) {
-  const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
+  const { isAdmin } = useAuth();
+  const confirm = useConfirm();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [minioVideoUrl, setMinioVideoUrl] = useState<string | null>(null);
@@ -52,15 +55,16 @@ export function VideoPlayer({
   const handleUpload = useCallback(
     async (file: File) => {
       if (!file.type.startsWith("video/")) {
-        alert("Please select a video file");
+        toast.error("Please select a video file");
         return;
       }
       setUploading(true);
       try {
         await apiUpload(`/lessons/${lessonId}/video`, file);
+        toast.success("Video uploaded");
         onVideoChange?.();
       } catch (err) {
-        alert(err instanceof Error ? err.message : "Upload failed");
+        toast.error(err instanceof Error ? err.message : "Upload failed");
       } finally {
         setUploading(false);
       }
@@ -69,10 +73,15 @@ export function VideoPlayer({
   );
 
   const handleDelete = useCallback(async () => {
-    if (!confirm("Remove this uploaded video?")) return;
-    await apiFetch(`/lessons/${lessonId}/video`, { method: "DELETE" });
-    onVideoChange?.();
-  }, [lessonId, onVideoChange]);
+    if (!(await confirm("Remove this uploaded video?"))) return;
+    try {
+      await apiFetch(`/lessons/${lessonId}/video`, { method: "DELETE" });
+      toast.success("Video removed");
+      onVideoChange?.();
+    } catch {
+      toast.error("Failed to remove video");
+    }
+  }, [lessonId, onVideoChange, confirm]);
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

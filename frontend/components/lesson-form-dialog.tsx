@@ -1,7 +1,8 @@
 "use client";
 
-import { BookOpen, Clock, Film, FileText, Dumbbell } from "lucide-react";
+import { BookOpen, Clock, Dumbbell, Film, FileText } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { RichTextEditor } from "@/components/rich-text-editor";
 import { Button } from "@/components/ui/button";
@@ -91,7 +92,10 @@ export function LessonFormDialog({
         await admin.updateLesson(lessonId, data);
       }
       setOpen(false);
+      toast.success(mode === "create" ? "Lesson created" : "Lesson updated");
       onSuccess();
+    } catch {
+      toast.error("Failed to save lesson");
     } finally {
       setSaving(false);
     }

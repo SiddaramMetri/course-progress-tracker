@@ -30,6 +30,9 @@ interface AuthState {
 interface AuthContextValue {
   user: UserInfo | null;
   token: string | null;
+  isAdmin: boolean;
+  isLearner: boolean;
+  isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
@@ -41,6 +44,9 @@ const API_BASE =
 const AuthContext = createContext<AuthContextValue>({
   user: null,
   token: null,
+  isAdmin: false,
+  isLearner: false,
+  isAuthenticated: false,
   login: async () => {},
   logout: () => {},
 });
@@ -95,6 +101,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user: auth?.user ?? null,
         token: auth?.token ?? null,
+        isAdmin: auth?.user?.role === "admin",
+        isLearner: auth?.user?.role === "learner",
+        isAuthenticated: !!auth?.user,
         login,
         logout,
       }}

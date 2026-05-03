@@ -1,28 +1,28 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFetch } from "@/lib/api";
+import { queryKeys } from "@/lib/query-keys";
 import type { ProgressToggleResponse } from "@/types";
 
 export function useToggleLesson(onSuccess?: () => void) {
-  const [toggling, setToggling] = useState(false);
+  const queryClient = useQueryClient();
 
-  const toggle = useCallback(
-    async (lessonId: string) => {
-      setToggling(true);
-      try {
-        await apiFetch<ProgressToggleResponse>(
-          `/progress/${lessonId}/toggle`,
-          { method: "POST" }
-        );
-        onSuccess?.();
-      } finally {
-        setToggling(false);
-      }
+  const mutation = useMutation({
+    mutationFn: (lessonId: string) =>
+      apiFetch<ProgressToggleResponse>(`/progress/${lessonId}/toggle`, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      // Invalidate course data to refresh progress
+      queryClient.invalidateQueries({ queryKey: queryKeys.courses.all });
+      onSuccess?.();
     },
-    [onSuccess]
-  );
+  });
 
-  return { toggle, toggling };
+  return {
+    toggle: mutation.mutateAsync,
+    toggling: mutation.isPending,
+  };
 }

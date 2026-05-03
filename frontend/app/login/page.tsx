@@ -1,8 +1,9 @@
 "use client";
 
 import { GraduationCap, Shield, User } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,44 +36,54 @@ const DEMO_ACCOUNTS = [
 ];
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const { login, user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    searchParams.get("error")
+  );
   const [loading, setLoading] = useState(false);
 
-  if (user) {
-    router.replace("/");
-    return null;
-  }
+  // Already logged in - redirect handled by AuthGuard, just show nothing
+  if (user) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !password) return;
+  const handleLogin = async (loginEmail: string, loginPassword: string) => {
     setError(null);
     setLoading(true);
     try {
-      await login(email.trim(), password);
+      await login(loginEmail, loginPassword);
+      toast.success("Welcome back!");
       router.push("/");
-    } catch {
-      setError("Invalid email or password");
+    } catch (err) {
+      const raw = err instanceof Error ? err.message : "Login failed";
+      const errorMsg = raw.includes("blocked")
+        ? "Account is blocked. Contact your administrator."
+        : "Invalid email or password";
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password) return;
+    await handleLogin(email.trim(), password);
+  };
+
   const handleDemoLogin = async (demoEmail: string, demoPassword: string) => {
-    setError(null);
-    setLoading(true);
-    try {
-      await login(demoEmail, demoPassword);
-      router.push("/");
-    } catch {
-      setError("Demo login failed. Make sure the backend is seeded.");
-    } finally {
-      setLoading(false);
-    }
+    await handleLogin(demoEmail, demoPassword);
   };
 
   return (

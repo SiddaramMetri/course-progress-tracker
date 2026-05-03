@@ -8,17 +8,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+
 import { useAdmin } from "@/hooks/use-admin";
 import { useAuth } from "@/hooks/use-auth";
+import { useConfirm } from "@/hooks/use-confirm";
 import { useCourses } from "@/hooks/use-courses";
 
 import { CourseFormDialog } from "./course-form-dialog";
 
 export function CourseList() {
   const { courses, loading, error, refetch } = useCourses();
-  const { user } = useAuth();
+  const { isAdmin } = useAuth();
   const admin = useAdmin();
-  const isAdmin = user?.role === "admin";
+  const confirm = useConfirm();
 
   if (loading) {
     return (
@@ -58,9 +61,14 @@ export function CourseList() {
   const handleDelete = async (courseId: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!confirm("Delete this course? This cannot be undone.")) return;
-    await admin.deleteCourse(courseId);
-    refetch();
+    if (!(await confirm("Delete this course? This cannot be undone."))) return;
+    try {
+      await admin.deleteCourse(courseId);
+      toast.success("Course deleted");
+      refetch();
+    } catch {
+      toast.error("Failed to delete course");
+    }
   };
 
   return (

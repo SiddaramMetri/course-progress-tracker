@@ -9,8 +9,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
 import { useAdmin } from "@/hooks/use-admin";
 import { useAuth } from "@/hooks/use-auth";
+import { useConfirm } from "@/hooks/use-confirm";
 import type { CourseDetail, LessonOut } from "@/types";
 
 import { CourseProgress } from "./course-progress";
@@ -31,20 +34,30 @@ export function CourseSidebar({
   onSelectLesson,
   onRefetch,
 }: CourseSidebarProps) {
-  const { user } = useAuth();
+  const { isAdmin } = useAuth();
   const admin = useAdmin();
-  const isAdmin = user?.role === "admin";
+  const confirm = useConfirm();
 
   const handleDeleteModule = async (moduleId: string) => {
-    if (!confirm("Delete this module and all its lessons?")) return;
-    await admin.deleteModule(moduleId);
-    onRefetch();
+    if (!(await confirm("Delete this module and all its lessons?"))) return;
+    try {
+      await admin.deleteModule(moduleId);
+      toast.success("Module deleted");
+      onRefetch();
+    } catch {
+      toast.error("Failed to delete module");
+    }
   };
 
   const handleDeleteLesson = async (lessonId: string) => {
-    if (!confirm("Delete this lesson?")) return;
-    await admin.deleteLesson(lessonId);
-    onRefetch();
+    if (!(await confirm("Delete this lesson?"))) return;
+    try {
+      await admin.deleteLesson(lessonId);
+      toast.success("Lesson deleted");
+      onRefetch();
+    } catch {
+      toast.error("Failed to delete lesson");
+    }
   };
 
   return (

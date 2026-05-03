@@ -42,7 +42,10 @@ def _user_to_out(user: User) -> UserOut:
 @router.post("/login", response_model=LoginResponse)
 def login(data: UserLogin, db: Session = Depends(get_db)):
     """Authenticate with email and password."""
-    result = auth_service.login_user(db, data.email, data.password)
+    try:
+        result = auth_service.login_user(db, data.email, data.password)
+    except ValueError as e:
+        raise HTTPException(status_code=403, detail=str(e))
     if not result:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     user, token, refresh_token = result

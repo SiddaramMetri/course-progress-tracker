@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -64,7 +65,10 @@ export function CourseFormDialog({
         });
       }
       setOpen(false);
+      toast.success(mode === "create" ? "Course created" : "Course updated");
       onSuccess();
+    } catch {
+      toast.error("Failed to save course");
     } finally {
       setSaving(false);
     }

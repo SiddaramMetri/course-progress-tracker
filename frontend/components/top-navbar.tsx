@@ -1,14 +1,14 @@
 "use client";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, Check, CheckCheck } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
 import { apiFetch } from "@/lib/api";
+import { queryKeys } from "@/lib/query-keys";
 
 interface Notification {
   id: string;
@@ -29,35 +29,35 @@ function timeAgo(dateStr: string): string {
 }
 
 export function TopNavbar() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  const fetchNotifications = useCallback(async () => {
-    try {
-      const [notifs, countData] = await Promise.all([
-        apiFetch<Notification[]>("/notifications"),
-        apiFetch<{ count: number }>("/notifications/unread-count"),
-      ]);
-      setNotifications(notifs.slice(0, 10));
-      setUnreadCount(countData.count);
-    } catch {
-      // ignore
-    }
-  }, []);
+  const { data: unreadData } = useQuery({
+    queryKey: queryKeys.notifications.unreadCount,
+    queryFn: () => apiFetch<{ count: number }>("/notifications/unread-count"),
+    enabled: isAuthenticated,
+    refetchInterval: 60000, // poll every 60s instead of 30s
+    staleTime: 30000,
+  });
 
-  useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
-  }, [fetchNotifications]);
+  const { data: notifications } = useQuery({
+    queryKey: queryKeys.notifications.all,
+    queryFn: () => apiFetch<Notification[]>("/notifications"),
+    enabled: isAuthenticated && open, // only fetch when popup is open
+    staleTime: 10000,
+  });
+
+  const unreadCount = unreadData?.count ?? 0;
 
   // Close on click outside
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -65,25 +65,33 @@ export function TopNavbar() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
+  const invalidateNotifications = () => {
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.notifications.all,
+    });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.notifications.unreadCount,
+    });
+  };
+
   const handleMarkRead = async (id: string) => {
     await apiFetch(`/notifications/${id}/read`, { method: "POST" });
-    fetchNotifications();
+    invalidateNotifications();
   };
 
   const handleMarkAllRead = async () => {
     await apiFetch("/notifications/read-all", { method: "POST" });
-    fetchNotifications();
+    invalidateNotifications();
   };
+
+  const displayNotifications = (notifications ?? []).slice(0, 10);
 
   return (
     <header className="sticky top-0 z-20 flex h-12 items-center justify-end gap-3 border-b bg-background/95 backdrop-blur px-6">
       {/* Notification Bell */}
       <div className="relative" ref={popoverRef}>
         <button
-          onClick={() => {
-            setOpen(!open);
-            if (!open) fetchNotifications();
-          }}
+          onClick={() => setOpen(!open)}
           className="relative flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted transition-colors"
         >
           <Bell className="h-4 w-4" />
@@ -111,12 +119,12 @@ export function TopNavbar() {
             </div>
             <Separator />
             <div className="max-h-[320px] overflow-y-auto">
-              {notifications.length === 0 ? (
+              {displayNotifications.length === 0 ? (
                 <div className="py-8 text-center text-sm text-muted-foreground">
                   No notifications yet
                 </div>
               ) : (
-                notifications.map((n) => (
+                displayNotifications.map((n) => (
                   <div
                     key={n.id}
                     className={`flex gap-3 px-4 py-3 border-b last:border-b-0 ${

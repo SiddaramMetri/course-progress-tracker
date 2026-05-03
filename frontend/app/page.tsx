@@ -5,14 +5,11 @@ import { Plus } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { CourseFormDialog } from "@/components/course-form-dialog";
 import { CourseList } from "@/components/course-list";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/use-auth";
+import { AdminOnly } from "@/components/require-role";
 import { useCourses } from "@/hooks/use-courses";
 
 export default function Home() {
-  const { user } = useAuth();
   const { refetch } = useCourses();
-  const isAdmin = user?.role === "admin";
 
   return (
     <AppShell>
@@ -26,7 +23,7 @@ export default function Home() {
               Track your learning progress across all courses.
             </p>
           </div>
-          {isAdmin && (
+          <AdminOnly>
             <CourseFormDialog
               mode="create"
               onSuccess={refetch}
@@ -37,7 +34,7 @@ export default function Home() {
                 </span>
               }
             />
-          )}
+          </AdminOnly>
         </div>
         <CourseList />
       </div>

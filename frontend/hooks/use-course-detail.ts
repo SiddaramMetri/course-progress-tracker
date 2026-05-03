@@ -1,33 +1,33 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 
 import { apiFetch } from "@/lib/api";
+import { queryKeys } from "@/lib/query-keys";
 import type { CourseDetail } from "@/types";
 
 export function useCourseDetail(courseId: string) {
-  const [course, setCourse] = useState<CourseDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetch = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await apiFetch<CourseDetail>(`/courses/${courseId}`);
-      setCourse(data);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load course details"
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [courseId]);
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.courses.detail(courseId),
+    queryFn: () => apiFetch<CourseDetail>(`/courses/${courseId}`),
+    enabled: !!courseId,
+  });
 
-  useEffect(() => {
-    fetch();
-  }, [fetch]);
+  const refetch = useCallback(() => {
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.courses.detail(courseId),
+    });
+    // Also invalidate the course list (progress may have changed)
+    queryClient.invalidateQueries({ queryKey: queryKeys.courses.all });
+  }, [queryClient, courseId]);
 
-  return { course, loading, error, refetch: fetch };
+  return {
+    course: data ?? null,
+    loading: isLoading,
+    error: error?.message ?? null,
+    refetch,
+  };
 }

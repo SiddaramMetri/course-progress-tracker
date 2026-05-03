@@ -57,10 +57,14 @@ def _create_session(db: DBSession, user_id: uuid.UUID) -> Session:
 def login_user(
     db: DBSession, email: str, password: str
 ) -> tuple[User, str, str] | None:
-    """Verify credentials and create a session. Returns (user, token, refresh_token)."""
+    """Verify credentials and create a session. Returns (user, token, refresh_token).
+    Raises ValueError if account is blocked."""
     user = db.query(User).filter(User.email == email).first()
     if not user or not verify_password(password, user.password_hash):
         return None
+
+    if user.is_blocked:
+        raise ValueError("Account is blocked. Contact your administrator.")
 
     session = _create_session(db, user.id)
     return user, session.token, session.refresh_token

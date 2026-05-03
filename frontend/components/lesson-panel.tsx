@@ -42,8 +42,7 @@ export function LessonPanel({
   nextTitle,
   onRefetch,
 }: LessonPanelProps) {
-  const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
+  const { isAdmin } = useAuth();
   const {
     attachments,
     loading: attachmentsLoading,
