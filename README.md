@@ -1,27 +1,31 @@
 # Course Progress Tracker
 
-A mini-application to view course curricula, mark lessons as complete, and track learning progress.
+A mini-application to view course curricula, mark lessons as complete, track learning progress, and upload lesson materials (documents, videos, notes, etc.).
 
 ## Tech Stack
 
-- **Backend:** Python, FastAPI, SQLAlchemy, PostgreSQL
+- **Backend:** Python, FastAPI, SQLAlchemy, PostgreSQL, MinIO (S3-compatible storage)
 - **Frontend:** Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui
+- **Infrastructure:** Docker Compose (PostgreSQL + MinIO)
 
 ## Prerequisites
 
 - Python 3.11+
 - Node.js 18+
-- PostgreSQL
+- Docker & Docker Compose
 
 ## Setup
 
-### 1. Database
+### 1. Start Services (PostgreSQL + MinIO)
 
 ```bash
-brew install postgresql@16
-brew services start postgresql@16
-createdb course_tracker
+docker compose up -d
 ```
+
+This starts:
+- **PostgreSQL** on port `5432` (user: `postgres`, password: `postgres`, db: `course_tracker`)
+- **MinIO API** on port `9000` (access key: `minioadmin`, secret: `minioadmin`)
+- **MinIO Console** on port `9001` (browse uploaded files at http://localhost:9001)
 
 ### 2. Backend
 
@@ -51,21 +55,25 @@ Frontend runs at `http://localhost:3000`.
 | GET | `/api/courses` | List all courses with progress |
 | GET | `/api/courses/{id}` | Course detail with modules and lessons |
 | POST | `/api/progress/{lesson_id}/toggle` | Toggle lesson completion |
+| POST | `/api/lessons/{lesson_id}/attachments` | Upload file to a lesson |
+| GET | `/api/lessons/{lesson_id}/attachments` | List lesson attachments |
+| DELETE | `/api/lessons/attachments/{id}` | Delete an attachment |
 | GET | `/api/health` | Health check |
 
 ## Project Structure
 
 ```
 course-progress-tracker/
+├── docker-compose.yml       # PostgreSQL + MinIO
 ├── backend/
 │   ├── app/
 │   │   ├── main.py          # FastAPI app entry point
 │   │   ├── config.py        # Environment settings
 │   │   ├── database.py      # SQLAlchemy setup
-│   │   ├── models/          # ORM models
+│   │   ├── models/          # ORM models (Course, Module, Lesson, Attachment, UserProgress)
 │   │   ├── schemas/         # Pydantic response models
 │   │   ├── routers/         # API route handlers
-│   │   ├── services/        # Business logic
+│   │   ├── services/        # Business logic + MinIO storage
 │   │   └── seed.py          # Database seeder
 │   └── requirements.txt
 ├── frontend/

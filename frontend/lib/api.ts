@@ -17,3 +17,23 @@ export async function apiFetch<T>(
 
   return res.json();
 }
+
+export async function apiUpload<T>(
+  path: string,
+  file: File
+): Promise<T> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const message = await res.text().catch(() => "Unknown error");
+    throw new Error(`Upload error ${res.status}: ${message}`);
+  }
+
+  return res.json();
+}

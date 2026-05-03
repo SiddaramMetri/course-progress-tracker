@@ -2,8 +2,11 @@
 
 import { BookOpen, CheckCircle2, Circle } from "lucide-react";
 
+import { AttachmentList } from "@/components/attachment-list";
+import { FileUpload } from "@/components/file-upload";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useAttachments } from "@/hooks/use-attachments";
 import type { LessonOut } from "@/types";
 
 interface LessonPanelProps {
@@ -13,6 +16,14 @@ interface LessonPanelProps {
 }
 
 export function LessonPanel({ lesson, onToggle, toggling }: LessonPanelProps) {
+  const {
+    attachments,
+    loading: attachmentsLoading,
+    uploading,
+    upload,
+    remove,
+  } = useAttachments(lesson.id);
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
@@ -36,6 +47,16 @@ export function LessonPanel({ lesson, onToggle, toggling }: LessonPanelProps) {
           {lesson.description}
         </p>
       )}
+
+      <div className="flex flex-col gap-3">
+        <h3 className="text-sm font-medium">Materials</h3>
+        <AttachmentList
+          attachments={attachments}
+          loading={attachmentsLoading}
+          onDelete={remove}
+        />
+        <FileUpload onUpload={upload} uploading={uploading} />
+      </div>
 
       <div>
         <Button

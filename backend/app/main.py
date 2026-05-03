@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import courses, progress
+from app.routers import attachments, courses, progress
 
 app = FastAPI(title="Course Progress Tracker", version="1.0.0")
 
@@ -16,6 +16,7 @@ app.add_middleware(
 
 app.include_router(courses.router)
 app.include_router(progress.router)
+app.include_router(attachments.router)
 
 
 @app.get("/api/health")

@@ -74,3 +74,8 @@ class Lesson(Base):
     )
 
     module: Mapped["Module"] = relationship(back_populates="lessons")
+    attachments: Mapped[list["Attachment"]] = relationship(  # noqa: F821
+        back_populates="lesson",
+        cascade="all, delete-orphan",
+        order_by="Attachment.uploaded_at",
+    )

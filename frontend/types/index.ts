@@ -37,3 +37,13 @@ export interface ProgressToggleResponse {
   completed: boolean;
   completed_at: string | null;
 }
+
+export interface AttachmentOut {
+  id: string;
+  lesson_id: string;
+  filename: string;
+  content_type: string;
+  size_bytes: number;
+  uploaded_at: string;
+  download_url: string;
+}
