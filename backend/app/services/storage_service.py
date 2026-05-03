@@ -57,13 +57,33 @@ def get_s3_client():
     )
 
 
+_bucket_verified = False
+
+
 def ensure_bucket(client=None):
     """Create the bucket if it doesn't exist."""
+    global _bucket_verified
+    if _bucket_verified:
+        return
+
     client = client or get_s3_client()
     try:
-        client.head_bucket(Bucket=settings.minio_bucket)
-    except ClientError:
-        client.create_bucket(Bucket=settings.minio_bucket)
+        # Try listing objects as a lighter check than head_bucket
+        client.list_objects_v2(Bucket=settings.minio_bucket, MaxKeys=1)
+        _bucket_verified = True
+    except ClientError as e:
+        error_code = e.response.get("Error", {}).get("Code", "")
+        if error_code in ("NoSuchBucket",):
+            try:
+                client.create_bucket(Bucket=settings.minio_bucket)
+                print(f"[MinIO] Created bucket: {settings.minio_bucket}")
+                _bucket_verified = True
+            except ClientError as ce:
+                print(f"[MinIO] Failed to create bucket: {ce}")
+        else:
+            # Assume bucket exists (might be permissions issue)
+            print(f"[MinIO] Bucket check returned {error_code}, proceeding anyway")
+            _bucket_verified = True
 
 
 def upload_file(
