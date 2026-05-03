@@ -2,8 +2,10 @@
 
 import {
   Ban,
+  Bell,
   CheckCircle,
   Eye,
+  Send,
   ShieldCheck,
   User,
   Users,
@@ -13,7 +15,18 @@ import { useCallback, useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Sheet,
   SheetContent,
@@ -64,6 +77,84 @@ interface UserDetail {
     completed_lessons: number;
     progress_percent: number;
   }[];
+}
+
+function SendNotificationDialog({ userId, userName }: { userId?: string; userName?: string }) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const handleSend = async () => {
+    if (!title.trim() || !message.trim()) return;
+    setSending(true);
+    try {
+      await apiFetch("/notifications/send", {
+        method: "POST",
+        body: JSON.stringify({
+          user_id: userId || null,
+          title: title.trim(),
+          message: message.trim(),
+        }),
+      });
+      setOpen(false);
+      setTitle("");
+      setMessage("");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger>
+        <span className="inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-muted cursor-pointer">
+          <Send className="h-3 w-3" />
+          {userId ? "Notify" : "Send to All"}
+        </span>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogTitle>Send Notification</DialogTitle>
+        <DialogDescription>
+          {userId
+            ? `Send a notification to ${userName}.`
+            : "Send a notification to all active learners."}
+        </DialogDescription>
+        <div className="space-y-4 mt-2">
+          <div className="space-y-2">
+            <Label>Title</Label>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Notification title"
+              autoFocus
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Message</Label>
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Notification message"
+              rows={3}
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <DialogClose>
+              <Button type="button" variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button
+              onClick={handleSend}
+              disabled={sending || !title.trim() || !message.trim()}
+            >
+              <Bell className="h-4 w-4 mr-1" />
+              {sending ? "Sending..." : "Send"}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export default function AdminUsersPage() {
@@ -123,16 +214,19 @@ export default function AdminUsersPage() {
   return (
     <AppShell>
       <div className="px-8 py-8">
-        <div className="flex items-center gap-3 mb-6">
-          <Users className="h-6 w-6 text-primary" />
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              User Management
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              View student progress, manage accounts and batch assignments.
-            </p>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Users className="h-6 w-6 text-primary" />
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight">
+                User Management
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                View student progress, manage accounts and batch assignments.
+              </p>
+            </div>
           </div>
+          <SendNotificationDialog />
         </div>
 
         {/* Stats */}

@@ -55,6 +55,7 @@ def get_all_courses(
             Course.id,
             Course.title,
             Course.description,
+            Course.cover_image_key,
             func.coalesce(total_subq.c.total, 0).label("total_count"),
             func.coalesce(completed_subq.c.completed, 0).label(
                 "completed_count"
@@ -66,16 +67,29 @@ def get_all_courses(
         .all()
     )
 
-    return [
-        CourseListItem(
-            id=row.id,
-            title=row.title,
-            description=row.description,
-            total_count=row.total_count,
-            completed_count=row.completed_count,
+    from app.services import storage_service
+
+    result = []
+    for row in rows:
+        cover_url = None
+        if row.cover_image_key:
+            try:
+                cover_url = storage_service.generate_download_url(
+                    row.cover_image_key, expires_in=7200
+                )
+            except Exception:
+                pass
+        result.append(
+            CourseListItem(
+                id=row.id,
+                title=row.title,
+                description=row.description,
+                cover_image_url=cover_url,
+                total_count=row.total_count,
+                completed_count=row.completed_count,
+            )
         )
-        for row in rows
-    ]
+    return result
 
 
 def get_course_detail(

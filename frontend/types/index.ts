@@ -2,6 +2,7 @@ export interface CourseListItem {
   id: string;
   title: string;
   description: string | null;
+  cover_image_url: string | null;
   completed_count: number;
   total_count: number;
 }

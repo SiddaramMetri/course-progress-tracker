@@ -18,6 +18,10 @@ class User(Base):
     )
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    mobile: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    avatar_key: Mapped[str | None] = mapped_column(
+        String(1000), nullable=True
+    )
     role: Mapped[str] = mapped_column(
         String(20), nullable=False, default="learner"
     )

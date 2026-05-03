@@ -14,7 +14,11 @@ interface UserInfo {
   id: string;
   email: string;
   name: string;
+  mobile: string | null;
   role: Role;
+  batch_name: string | null;
+  batch_start: string | null;
+  batch_end: string | null;
 }
 
 interface AuthState {

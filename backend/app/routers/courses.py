@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -200,3 +200,45 @@ def delete_lesson(
 ):
     if not course_service.delete_lesson(db, lesson_id):
         raise HTTPException(status_code=404, detail="Lesson not found")
+
+
+# --- Course Cover Image ---
+
+
+@router.post("/courses/{course_id}/cover")
+async def upload_cover_image(
+    course_id: uuid.UUID,
+    file: UploadFile,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(require_admin),
+):
+    """Upload a cover image for a course (admin only)."""
+    from app.models import Course
+    from app.services import storage_service
+
+    course = db.query(Course).filter(Course.id == course_id).first()
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    ct = file.content_type or ""
+    if not ct.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+
+    file_bytes = await file.read()
+    if len(file_bytes) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Image exceeds 5 MB")
+
+    # Delete old cover
+    if course.cover_image_key:
+        try:
+            storage_service.delete_file(course.cover_image_key)
+        except Exception:
+            pass
+
+    key = f"covers/{course_id}/{uuid.uuid4()}_{file.filename}"
+    storage_service.upload_file(file_bytes, key, ct)
+    course.cover_image_key = key
+    db.commit()
+
+    url = storage_service.generate_download_url(key, expires_in=7200)
+    return {"cover_image_url": url}

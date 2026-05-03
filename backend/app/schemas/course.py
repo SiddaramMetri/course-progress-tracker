@@ -45,6 +45,7 @@ class CourseListItem(BaseModel):
     id: uuid.UUID
     title: str
     description: str | None
+    cover_image_url: str | None = None
     completed_count: int
     total_count: int
 
