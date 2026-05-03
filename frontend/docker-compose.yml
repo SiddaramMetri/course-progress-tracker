@@ -1,0 +1,19 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - "3000"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.batchlearn-web.rule=Host(`batchlearn.siddarammetri.space`)
+      - traefik.http.routers.batchlearn-web.entrypoints=web,websecure
+      - traefik.http.services.batchlearn-web.loadbalancer.server.port=3000
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
+networks:
+  dokploy-network:
+    external: true
