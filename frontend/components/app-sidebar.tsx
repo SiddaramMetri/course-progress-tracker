@@ -3,9 +3,11 @@
 import {
   BookOpen,
   GraduationCap,
+  Layers,
   LayoutDashboard,
   LogOut,
   User,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -24,6 +26,7 @@ export function AppSidebar() {
   const { user, logout } = useAuth();
   const { courses } = useCourses();
 
+  const isAdmin = user?.role === "admin";
   const totalLessons = courses.reduce((s, c) => s + c.total_count, 0);
   const totalCompleted = courses.reduce((s, c) => s + c.completed_count, 0);
 
@@ -101,6 +104,39 @@ export function AppSidebar() {
             })}
           </ul>
         </div>
+
+        {isAdmin && (
+          <>
+            <Separator className="my-4" />
+            <div>
+              <p className="px-2 mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Admin
+              </p>
+              <Link
+                href="/admin/users"
+                className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors ${
+                  pathname === "/admin/users"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                }`}
+              >
+                <Users className="h-4 w-4" />
+                Users
+              </Link>
+              <Link
+                href="/admin/batches"
+                className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors ${
+                  pathname === "/admin/batches"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                }`}
+              >
+                <Layers className="h-4 w-4" />
+                Batches
+              </Link>
+            </div>
+          </>
+        )}
       </nav>
 
       {/* Overall Progress */}

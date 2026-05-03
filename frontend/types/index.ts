@@ -25,6 +25,8 @@ export interface ModuleOut {
   lessons: LessonOut[];
   completed_count: number;
   total_count: number;
+  is_locked: boolean;
+  unlock_date: string | null;
 }
 
 export interface CourseDetail {

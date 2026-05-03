@@ -18,6 +18,8 @@ def get_current_user(
     user = auth_service.get_user_by_token(db, token)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
+    if user.is_blocked:
+        raise HTTPException(status_code=403, detail="Account is blocked")
     return user
 
 

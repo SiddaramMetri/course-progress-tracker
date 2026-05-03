@@ -24,6 +24,8 @@ class ModuleOut(BaseModel):
     lessons: list[LessonOut]
     completed_count: int
     total_count: int
+    is_locked: bool = False
+    unlock_date: str | None = None
 
     model_config = {"from_attributes": True}
 

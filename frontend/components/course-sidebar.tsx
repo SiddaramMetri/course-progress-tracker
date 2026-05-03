@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Circle, Pencil, Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, Circle, Lock, Pencil, Plus, Trash2 } from "lucide-react";
 
 import {
   Accordion,
@@ -62,7 +62,7 @@ export function CourseSidebar({
 
       <Accordion
         multiple
-        defaultValue={course.modules.map((m) => m.id)}
+        defaultValue={course.modules.filter((m) => !m.is_locked).map((m) => m.id)}
         className="w-full"
       >
         {course.modules.map((module) => (
@@ -70,8 +70,13 @@ export function CourseSidebar({
             <AccordionTrigger className="text-sm font-medium hover:no-underline">
               <div className="flex flex-col items-start gap-1 text-left flex-1">
                 <div className="flex items-center gap-1 w-full">
-                  <span className="flex-1">{module.title}</span>
-                  {isAdmin && (
+                  {module.is_locked && (
+                    <Lock className="h-3.5 w-3.5 text-orange-500 shrink-0" />
+                  )}
+                  <span className={`flex-1 ${module.is_locked ? "text-muted-foreground" : ""}`}>
+                    {module.title}
+                  </span>
+                  {isAdmin && !module.is_locked && (
                     <span
                       className="flex gap-0.5"
                       onClick={(e) => e.stopPropagation()}
@@ -97,64 +102,95 @@ export function CourseSidebar({
                     </span>
                   )}
                 </div>
-                <ModuleProgress
-                  completed={module.completed_count}
-                  total={module.total_count}
-                />
+                {module.is_locked ? (
+                  <span className="text-xs text-orange-500">
+                    Unlocks {module.unlock_date}
+                  </span>
+                ) : (
+                  <ModuleProgress
+                    completed={module.completed_count}
+                    total={module.total_count}
+                  />
+                )}
               </div>
             </AccordionTrigger>
             <AccordionContent>
-              <ul className="flex flex-col gap-1">
-                {module.lessons.map((lesson) => {
-                  const isSelected = lesson.id === selectedLessonId;
+              {module.is_locked ? (
+                <div className="relative">
+                  <ul className="flex flex-col gap-1 opacity-50 select-none">
+                    {module.lessons.map((lesson) => (
+                      <li key={lesson.id}>
+                        <div className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground cursor-not-allowed">
+                          <Lock className="h-3.5 w-3.5 text-orange-400 shrink-0" />
+                          <span className="truncate flex-1">{lesson.title}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  {module.lessons.length === 0 && (
+                    <div className="flex flex-col items-center gap-1 py-3 text-center">
+                      <Lock className="h-4 w-4 text-orange-400" />
+                      <p className="text-xs text-muted-foreground">
+                        Content locked
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <ul className="flex flex-col gap-1">
+                    {module.lessons.map((lesson) => {
+                      const isSelected = lesson.id === selectedLessonId;
 
-                  return (
-                    <li key={lesson.id} className="flex items-center group/lesson">
-                      <button
-                        onClick={() => onSelectLesson(lesson)}
-                        className={`flex flex-1 items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors text-left ${
-                          isSelected
-                            ? "bg-primary/10 text-primary font-medium"
-                            : "hover:bg-muted"
-                        }`}
-                      >
-                        {lesson.completed ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                        ) : (
-                          <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
-                        )}
-                        <span className="truncate flex-1">{lesson.title}</span>
-                      </button>
-                      {isAdmin && (
-                        <span className="flex gap-0.5 opacity-0 group-hover/lesson:opacity-100 transition-opacity pr-1">
-                          <LessonFormDialog
-                            mode="edit"
-                            lessonId={lesson.id}
-                            initialTitle={lesson.title}
-                            initialDescription={lesson.description ?? ""}
-                            initialVideoUrl={lesson.video_url ?? ""}
-                            initialLessonType={lesson.lesson_type}
-                            initialDuration={lesson.duration_minutes}
-                            initialSortOrder={lesson.sort_order}
-                            onSuccess={onRefetch}
-                            trigger={
-                              <span className="p-0.5 rounded hover:bg-muted cursor-pointer inline-flex">
-                                <Pencil className="h-3 w-3 text-muted-foreground" />
-                              </span>
-                            }
-                          />
-                          <span
-                            className="p-0.5 rounded hover:bg-muted cursor-pointer inline-flex"
-                            onClick={() => handleDeleteLesson(lesson.id)}
+                      return (
+                        <li key={lesson.id} className="flex items-center group/lesson">
+                          <button
+                            onClick={() => onSelectLesson(lesson)}
+                            className={`flex flex-1 items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors text-left ${
+                              isSelected
+                                ? "bg-primary/10 text-primary font-medium"
+                                : "hover:bg-muted"
+                            }`}
                           >
-                            <Trash2 className="h-3 w-3 text-destructive" />
-                          </span>
-                        </span>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
+                            {lesson.completed ? (
+                              <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                            ) : (
+                              <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
+                            )}
+                            <span className="truncate flex-1">{lesson.title}</span>
+                          </button>
+                          {isAdmin && (
+                            <span className="flex gap-0.5 opacity-0 group-hover/lesson:opacity-100 transition-opacity pr-1">
+                              <LessonFormDialog
+                                mode="edit"
+                                lessonId={lesson.id}
+                                initialTitle={lesson.title}
+                                initialDescription={lesson.description ?? ""}
+                                initialVideoUrl={lesson.video_url ?? ""}
+                                initialLessonType={lesson.lesson_type}
+                                initialDuration={lesson.duration_minutes}
+                                initialSortOrder={lesson.sort_order}
+                                onSuccess={onRefetch}
+                                trigger={
+                                  <span className="p-0.5 rounded hover:bg-muted cursor-pointer inline-flex">
+                                    <Pencil className="h-3 w-3 text-muted-foreground" />
+                                  </span>
+                                }
+                              />
+                              <span
+                                className="p-0.5 rounded hover:bg-muted cursor-pointer inline-flex"
+                                onClick={() => handleDeleteLesson(lesson.id)}
+                              >
+                                <Trash2 className="h-3 w-3 text-destructive" />
+                              </span>
+                            </span>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
               {isAdmin && (
                 <LessonFormDialog
                   mode="create"

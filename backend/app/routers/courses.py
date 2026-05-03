@@ -32,7 +32,20 @@ def list_courses(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    return course_service.get_all_courses(db, str(user.id))
+    all_courses = course_service.get_all_courses(db, str(user.id))
+
+    # Admins see everything; learners see only batch-published courses
+    if user.role == "admin":
+        return all_courses
+
+    from app.services import admin_service
+
+    available_ids = admin_service.get_learner_available_courses(
+        db, user.id, user.batch_id
+    )
+    if not available_ids:
+        return []
+    return [c for c in all_courses if c.id in available_ids]
 
 
 @router.get("/courses/{course_id}", response_model=CourseDetail)
@@ -46,6 +59,25 @@ def get_course(
     )
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
+
+    # For learners, mark locked modules with unlock dates
+    if user.role != "admin" and user.batch_id:
+        from app.services import admin_service
+
+        schedule_map = admin_service.get_module_schedule_map(
+            db, user.batch_id, course_id
+        )
+        for module in course.modules:
+            sched = schedule_map.get(module.id)
+            if sched and not sched["is_unlocked"]:
+                module.is_locked = True
+                module.unlock_date = str(sched["unlock_date"])
+                # Show lesson titles but strip sensitive content
+                for lesson in module.lessons:
+                    lesson.description = None
+                    lesson.video_url = None
+                    lesson.video_storage_key = None
+
     return course
 
 

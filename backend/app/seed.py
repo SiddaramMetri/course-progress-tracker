@@ -4,10 +4,28 @@ Run from the backend directory:
     python -m app.seed
 """
 
+from datetime import date
+
 from app.database import Base, SessionLocal, engine
-from app.models import Course, Lesson, Module
+from app.models import Batch, Course, Lesson, Module
 from app.models.user import User
 from app.services.auth_service import hash_password
+
+
+DEMO_BATCHES = [
+    {
+        "name": "July-2026",
+        "description": "July 2026 intake batch",
+        "start_date": date(2026, 7, 1),
+        "end_date": date(2026, 7, 31),
+    },
+    {
+        "name": "August-2026",
+        "description": "August 2026 intake batch",
+        "start_date": date(2026, 8, 1),
+        "end_date": date(2026, 8, 31),
+    },
+]
 
 
 DEMO_USERS = [
@@ -222,6 +240,27 @@ def seed():
 
     db = SessionLocal()
     try:
+        # Seed batches
+        existing_batch = db.query(Batch).first()
+        batch_map = {}
+        if not existing_batch:
+            for batch_data in DEMO_BATCHES:
+                batch = Batch(
+                    name=batch_data["name"],
+                    description=batch_data["description"],
+                    start_date=batch_data["start_date"],
+                    end_date=batch_data["end_date"],
+                )
+                db.add(batch)
+                db.flush()
+                batch_map[batch.name] = batch.id
+            db.commit()
+            print("Seeded 2 demo batches.")
+        else:
+            for b in db.query(Batch).all():
+                batch_map[b.name] = b.id
+            print("Batches already exist. Skipping batch seed.")
+
         # Seed users
         existing_user = db.query(User).first()
         if not existing_user:
@@ -231,6 +270,9 @@ def seed():
                     password_hash=hash_password(user_data["password"]),
                     name=user_data["name"],
                     role=user_data["role"],
+                    batch_id=batch_map.get("July-2026")
+                    if user_data["role"] == "learner"
+                    else None,
                 )
                 db.add(user)
             db.commit()

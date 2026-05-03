@@ -28,10 +28,12 @@ export default function CourseDetailPage({
 
   const { toggle, toggling } = useToggleLesson(handleToggleSuccess);
 
-  // Flatten all lessons across modules for prev/next navigation
+  // Flatten only unlocked lessons for prev/next navigation
   const allLessons = useMemo<LessonOut[]>(() => {
     if (!course) return [];
-    return course.modules.flatMap((m) => m.lessons);
+    return course.modules
+      .filter((m) => !m.is_locked)
+      .flatMap((m) => m.lessons);
   }, [course]);
 
   const selectedLesson = useMemo<LessonOut | null>(() => {
