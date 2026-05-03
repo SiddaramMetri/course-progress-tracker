@@ -232,6 +232,249 @@ SEED_DATA = [
             },
         ],
     },
+    {
+        "title": "Data Science with Python",
+        "description": (
+            "Master data analysis, visualization, and machine learning "
+            "fundamentals using Python, Pandas, and Scikit-learn."
+        ),
+        "is_free": False,
+        "modules": [
+            {
+                "title": "Data Analysis with Pandas",
+                "sort_order": 0,
+                "lessons": [
+                    {
+                        "title": "Introduction to Pandas",
+                        "description": (
+                            "<h2>What is Pandas?</h2>"
+                            "<p>Pandas is a powerful Python library for data manipulation "
+                            "and analysis. It provides data structures like <strong>DataFrame</strong> "
+                            "and <strong>Series</strong> that make working with structured data intuitive.</p>"
+                            "<ul><li>Reading CSV, Excel, and JSON files</li>"
+                            "<li>Filtering and sorting data</li>"
+                            "<li>Handling missing values</li></ul>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=vmEHCJofslg",
+                        "sort_order": 0,
+                    },
+                    {
+                        "title": "DataFrames & Series",
+                        "description": (
+                            "<h2>Core Data Structures</h2>"
+                            "<p>Learn how to create, manipulate, and transform DataFrames. "
+                            "Understand indexing, slicing, and column operations.</p>"
+                            "<ol><li>Creating DataFrames from dictionaries</li>"
+                            "<li>Selecting rows and columns</li>"
+                            "<li>Adding and removing columns</li>"
+                            "<li>Merging and joining DataFrames</li></ol>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=zmdjNSmRXF4",
+                        "sort_order": 1,
+                    },
+                    {
+                        "title": "Data Cleaning Techniques",
+                        "description": (
+                            "<p>Real-world data is messy. Learn how to clean and prepare "
+                            "datasets for analysis using Pandas built-in methods.</p>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=ZOX18HfLHGQ",
+                        "sort_order": 2,
+                    },
+                ],
+            },
+            {
+                "title": "Data Visualization",
+                "sort_order": 1,
+                "lessons": [
+                    {
+                        "title": "Matplotlib Basics",
+                        "description": (
+                            "<p>Create beautiful charts and plots with Matplotlib. "
+                            "Learn line plots, bar charts, histograms, and scatter plots.</p>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=UO98lJQ3QGI",
+                        "sort_order": 0,
+                    },
+                    {
+                        "title": "Advanced Visualizations with Seaborn",
+                        "description": (
+                            "<p>Seaborn provides a high-level interface for creating "
+                            "statistical graphics. Learn heatmaps, pair plots, and more.</p>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=6GUZXDef2U0",
+                        "sort_order": 1,
+                    },
+                ],
+            },
+            {
+                "title": "Machine Learning Intro",
+                "sort_order": 2,
+                "lessons": [
+                    {
+                        "title": "What is Machine Learning?",
+                        "description": (
+                            "<h2>ML Fundamentals</h2>"
+                            "<p>Understand the three types of machine learning:</p>"
+                            "<ul><li><strong>Supervised Learning</strong> - Learn from labeled data</li>"
+                            "<li><strong>Unsupervised Learning</strong> - Find patterns in unlabeled data</li>"
+                            "<li><strong>Reinforcement Learning</strong> - Learn through rewards</li></ul>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=ukzFI9rgwfU",
+                        "sort_order": 0,
+                    },
+                    {
+                        "title": "Linear Regression",
+                        "description": (
+                            "<p>Build your first ML model with Scikit-learn. "
+                            "Understand training, testing, and model evaluation.</p>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=nk2CQITm_eo",
+                        "sort_order": 1,
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        "title": "Git & GitHub Essentials",
+        "description": (
+            "Learn version control with Git and collaboration with GitHub. "
+            "Essential skills for every developer."
+        ),
+        "is_free": True,
+        "modules": [
+            {
+                "title": "Git Basics",
+                "sort_order": 0,
+                "lessons": [
+                    {
+                        "title": "Installing & Configuring Git",
+                        "description": (
+                            "<p>Set up Git on your machine and configure your "
+                            "identity for commits.</p>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=USjZcfj8yxE",
+                        "sort_order": 0,
+                    },
+                    {
+                        "title": "Your First Repository",
+                        "description": (
+                            "<h2>Init, Add, Commit</h2>"
+                            "<p>Learn the fundamental Git workflow:</p>"
+                            "<ol><li><code>git init</code> - Initialize a repo</li>"
+                            "<li><code>git add</code> - Stage changes</li>"
+                            "<li><code>git commit</code> - Save a snapshot</li></ol>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=HVsySz-h9r4",
+                        "sort_order": 1,
+                    },
+                    {
+                        "title": "Branching & Merging",
+                        "description": (
+                            "<p>Work on features in isolation with branches, "
+                            "then merge them back. Resolve merge conflicts.</p>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=JTE2Fn_sCZs",
+                        "sort_order": 2,
+                    },
+                ],
+            },
+            {
+                "title": "GitHub Collaboration",
+                "sort_order": 1,
+                "lessons": [
+                    {
+                        "title": "Push, Pull & Remote Repos",
+                        "description": (
+                            "<p>Connect your local repo to GitHub. Push changes, "
+                            "pull updates, and manage remote repositories.</p>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=nhNq2kIvi9s",
+                        "sort_order": 0,
+                    },
+                    {
+                        "title": "Pull Requests & Code Review",
+                        "description": (
+                            "<p>Collaborate with teams using pull requests. "
+                            "Learn code review best practices and GitHub workflows.</p>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=rgbCcBNZcdQ",
+                        "sort_order": 1,
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        "title": "React.js for Beginners",
+        "description": (
+            "Build modern user interfaces with React. Learn components, "
+            "hooks, state management, and routing."
+        ),
+        "is_free": False,
+        "modules": [
+            {
+                "title": "React Fundamentals",
+                "sort_order": 0,
+                "lessons": [
+                    {
+                        "title": "What is React?",
+                        "description": (
+                            "<h2>Modern UI Development</h2>"
+                            "<p>React is a JavaScript library for building user interfaces. "
+                            "Learn about the <strong>virtual DOM</strong>, "
+                            "<strong>JSX syntax</strong>, and component-based architecture.</p>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=Tn6-PIqc4UM",
+                        "sort_order": 0,
+                    },
+                    {
+                        "title": "Components & Props",
+                        "description": (
+                            "<p>Build reusable UI components and pass data between them "
+                            "using props. Understand the component lifecycle.</p>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=Cla1WwguArA",
+                        "sort_order": 1,
+                    },
+                    {
+                        "title": "State & Events",
+                        "description": (
+                            "<p>Make your components interactive with state. Handle "
+                            "user events like clicks, form inputs, and keyboard actions.</p>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=4pO-HcG2igk",
+                        "sort_order": 2,
+                    },
+                ],
+            },
+            {
+                "title": "React Hooks",
+                "sort_order": 1,
+                "lessons": [
+                    {
+                        "title": "useState & useEffect",
+                        "description": (
+                            "<p>Master the two most important React hooks for "
+                            "managing state and side effects in functional components.</p>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=O6P86uwfdR0",
+                        "sort_order": 0,
+                    },
+                    {
+                        "title": "Custom Hooks",
+                        "description": (
+                            "<p>Extract and share logic between components by creating "
+                            "your own custom hooks. Write cleaner, more reusable code.</p>"
+                        ),
+                        "video_url": "https://www.youtube.com/watch?v=J-g9ZJha8FE",
+                        "sort_order": 1,
+                    },
+                ],
+            },
+        ],
+    },
 ]
 
 
@@ -290,6 +533,7 @@ def seed():
             course = Course(
                 title=course_data["title"],
                 description=course_data["description"],
+                is_free=course_data.get("is_free", False),
             )
             for module_data in course_data["modules"]:
                 module = Module(

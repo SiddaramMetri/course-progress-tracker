@@ -19,6 +19,12 @@ class Session(Base):
     token: Mapped[str] = mapped_column(
         String(255), nullable=False, unique=True, index=True
     )
+    refresh_token: Mapped[str] = mapped_column(
+        String(255), nullable=False, unique=True, index=True
+    )
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

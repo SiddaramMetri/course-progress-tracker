@@ -7,6 +7,7 @@ from app.models.user import User
 from app.schemas.user import (
     LoginResponse,
     ProfileUpdate,
+    RefreshRequest,
     UserCreate,
     UserLogin,
     UserOut,
@@ -25,8 +26,16 @@ def _user_to_out(user: User) -> UserOut:
         mobile=user.mobile,
         role=user.role,
         batch_name=user.batch.name if user.batch else None,
-        batch_start=str(user.batch.start_date) if user.batch and user.batch.start_date else None,
-        batch_end=str(user.batch.end_date) if user.batch and user.batch.end_date else None,
+        batch_start=(
+            str(user.batch.start_date)
+            if user.batch and user.batch.start_date
+            else None
+        ),
+        batch_end=(
+            str(user.batch.end_date)
+            if user.batch and user.batch.end_date
+            else None
+        ),
     )
 
 
@@ -36,8 +45,28 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
     result = auth_service.login_user(db, data.email, data.password)
     if not result:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    user, token = result
-    return LoginResponse(token=token, user=_user_to_out(user))
+    user, token, refresh_token = result
+    return LoginResponse(
+        token=token,
+        refresh_token=refresh_token,
+        user=_user_to_out(user),
+    )
+
+
+@router.post("/refresh", response_model=LoginResponse)
+def refresh(data: RefreshRequest, db: Session = Depends(get_db)):
+    """Get new access token using refresh token."""
+    result = auth_service.refresh_access_token(db, data.refresh_token)
+    if not result:
+        raise HTTPException(
+            status_code=401, detail="Invalid or expired refresh token"
+        )
+    user, token, refresh_token = result
+    return LoginResponse(
+        token=token,
+        refresh_token=refresh_token,
+        user=_user_to_out(user),
+    )
 
 
 @router.post("/register", response_model=UserOut, status_code=201)

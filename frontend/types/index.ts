@@ -3,6 +3,7 @@ export interface CourseListItem {
   title: string;
   description: string | null;
   cover_image_url: string | null;
+  is_free: boolean;
   completed_count: number;
   total_count: number;
 }

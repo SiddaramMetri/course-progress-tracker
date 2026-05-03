@@ -46,6 +46,7 @@ class CourseListItem(BaseModel):
     title: str
     description: str | None
     cover_image_url: str | None = None
+    is_free: bool = False
     completed_count: int
     total_count: int
 
@@ -58,6 +59,7 @@ class CourseListItem(BaseModel):
 class CourseCreate(BaseModel):
     title: str
     description: str | None = None
+    is_free: bool = False
 
 
 class CourseUpdate(BaseModel):

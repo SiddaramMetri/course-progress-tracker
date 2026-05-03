@@ -56,6 +56,7 @@ def get_all_courses(
             Course.title,
             Course.description,
             Course.cover_image_key,
+            Course.is_free,
             func.coalesce(total_subq.c.total, 0).label("total_count"),
             func.coalesce(completed_subq.c.completed, 0).label(
                 "completed_count"
@@ -85,6 +86,7 @@ def get_all_courses(
                 title=row.title,
                 description=row.description,
                 cover_image_url=cover_url,
+                is_free=row.is_free,
                 total_count=row.total_count,
                 completed_count=row.completed_count,
             )
@@ -180,7 +182,7 @@ def get_course_detail(
 
 
 def create_course(db: Session, data: CourseCreate) -> Course:
-    course = Course(title=data.title, description=data.description)
+    course = Course(title=data.title, description=data.description, is_free=data.is_free)
     db.add(course)
     db.commit()
     db.refresh(course)

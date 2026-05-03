@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Bell,
   BookOpen,
   GraduationCap,
   Layers,
@@ -13,15 +12,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
 import { useCourses } from "@/hooks/use-courses";
-import { apiFetch } from "@/lib/api";
-
 import { CourseProgress } from "./course-progress";
 
 export function AppSidebar() {
@@ -29,17 +25,10 @@ export function AppSidebar() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const { courses } = useCourses();
-  const [unreadCount, setUnreadCount] = useState(0);
 
   const isAdmin = user?.role === "admin";
   const totalLessons = courses.reduce((s, c) => s + c.total_count, 0);
   const totalCompleted = courses.reduce((s, c) => s + c.completed_count, 0);
-
-  useEffect(() => {
-    apiFetch<{ count: number }>("/notifications/unread-count")
-      .then((d) => setUnreadCount(d.count))
-      .catch(() => {});
-  }, [pathname]);
 
   const handleLogout = () => {
     logout();
@@ -84,16 +73,6 @@ export function AppSidebar() {
             Menu
           </p>
           {navItem("/", <LayoutDashboard className="h-4 w-4" />, "Dashboard")}
-          {navItem(
-            "/notifications",
-            <Bell className="h-4 w-4" />,
-            "Notifications",
-            unreadCount > 0 ? (
-              <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4 min-w-4 flex items-center justify-center">
-                {unreadCount}
-              </Badge>
-            ) : undefined
-          )}
           {navItem(
             "/account",
             <UserCircle className="h-4 w-4" />,

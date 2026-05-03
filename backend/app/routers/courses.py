@@ -34,7 +34,7 @@ def list_courses(
 ):
     all_courses = course_service.get_all_courses(db, str(user.id))
 
-    # Admins see everything; learners see only batch-published courses
+    # Admins see everything; learners see batch-published + free courses
     if user.role == "admin":
         return all_courses
 
@@ -43,9 +43,7 @@ def list_courses(
     available_ids = admin_service.get_learner_available_courses(
         db, user.id, user.batch_id
     )
-    if not available_ids:
-        return []
-    return [c for c in all_courses if c.id in available_ids]
+    return [c for c in all_courses if c.id in available_ids or c.is_free]
 
 
 @router.get("/courses/{course_id}", response_model=CourseDetail)

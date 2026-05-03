@@ -23,6 +23,7 @@ interface UserInfo {
 
 interface AuthState {
   token: string;
+  refresh_token: string;
   user: UserInfo;
 }
 
@@ -73,7 +74,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const data = await res.json();
-    const state: AuthState = { token: data.token, user: data.user };
+    const state: AuthState = {
+      token: data.token,
+      refresh_token: data.refresh_token,
+      user: data.user,
+    };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     setAuth(state);
   }, []);
