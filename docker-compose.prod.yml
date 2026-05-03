@@ -1,0 +1,44 @@
+# Production docker-compose for VPS deployment
+# Usage: docker compose -f docker-compose.prod.yml up -d
+#
+# Prerequisites:
+# - PostgreSQL running externally (or use docker-compose.yml for local DB)
+# - MinIO running externally (or use docker-compose.yml for local MinIO)
+# - Create .env.prod with your settings
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@host.docker.internal/course_tracker}
+      - CORS_ORIGINS=["${FRONTEND_URL:-http://localhost:3000}"]
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-host.docker.internal:9000}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+      - MINIO_BUCKET=${MINIO_BUCKET:-course-materials}
+      - MINIO_USE_SSL=${MINIO_USE_SSL:-false}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000/api}
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000/api}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
