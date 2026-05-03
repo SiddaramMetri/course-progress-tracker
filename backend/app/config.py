@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     minio_secret_key: str = "minioadmin"
     minio_bucket: str = "course-materials"
     minio_use_ssl: bool = False
+    minio_skip_ssl_verify: bool = False
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

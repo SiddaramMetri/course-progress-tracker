@@ -1,4 +1,5 @@
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 
 from app.config import settings
@@ -11,6 +12,7 @@ def get_s3_client():
         endpoint_url=f"{scheme}://{settings.minio_endpoint}",
         aws_access_key_id=settings.minio_access_key,
         aws_secret_access_key=settings.minio_secret_key,
+        verify=not settings.minio_skip_ssl_verify,
     )
 
 
