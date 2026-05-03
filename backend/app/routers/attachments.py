@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.dependencies import require_admin
+from app.dependencies import get_current_user, require_admin
 from app.models import Lesson
 from app.models.user import User
 from app.schemas.attachment import AttachmentOut, AttachmentUploadResponse
@@ -30,8 +30,9 @@ async def upload_attachment(
     lesson_id: uuid.UUID,
     file: UploadFile,
     db: Session = Depends(get_db),
+    _user: User = Depends(get_current_user),
 ):
-    """Upload a file attachment to a lesson."""
+    """Upload a file attachment to a lesson (authenticated)."""
     lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
     if not lesson:
         raise HTTPException(status_code=404, detail="Lesson not found")
@@ -58,8 +59,9 @@ async def upload_attachment(
 def list_attachments(
     lesson_id: uuid.UUID,
     db: Session = Depends(get_db),
+    _user: User = Depends(get_current_user),
 ):
-    """List all attachments for a lesson with download URLs."""
+    """List all attachments for a lesson (authenticated)."""
     return attachment_service.list_attachments(db, lesson_id)
 
 
@@ -67,6 +69,7 @@ def list_attachments(
 def delete_attachment(
     attachment_id: uuid.UUID,
     db: Session = Depends(get_db),
+    _admin: User = Depends(require_admin),
 ):
     """Delete an attachment."""
     deleted = attachment_service.delete_attachment(db, attachment_id)
@@ -146,8 +149,9 @@ def delete_video(
 def get_video_url(
     lesson_id: uuid.UUID,
     db: Session = Depends(get_db),
+    _user: User = Depends(get_current_user),
 ):
-    """Get a fresh presigned URL for a lesson's uploaded video."""
+    """Get a fresh presigned URL for a lesson's uploaded video (authenticated)."""
     lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
     if not lesson:
         raise HTTPException(status_code=404, detail="Lesson not found")

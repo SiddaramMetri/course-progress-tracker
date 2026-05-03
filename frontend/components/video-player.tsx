@@ -15,6 +15,7 @@ interface VideoPlayerProps {
   storageKey?: string | null;
   lessonId: string;
   onVideoChange?: () => void;
+  hideAdminControls?: boolean;
 }
 
 function extractYouTubeId(url: string): string | null {
@@ -34,8 +35,10 @@ export function VideoPlayer({
   storageKey,
   lessonId,
   onVideoChange,
+  hideAdminControls = false,
 }: VideoPlayerProps) {
-  const { isAdmin } = useAuth();
+  const { isAdmin: rawIsAdmin } = useAuth();
+  const isAdmin = rawIsAdmin && !hideAdminControls;
   const confirm = useConfirm();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);

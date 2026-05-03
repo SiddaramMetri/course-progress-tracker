@@ -17,9 +17,10 @@ import { useCourses } from "@/hooks/use-courses";
 
 import { CourseFormDialog } from "./course-form-dialog";
 
-export function CourseList() {
+export function CourseList({ hideAdminControls = false }: { hideAdminControls?: boolean }) {
   const { courses, loading, error, refetch } = useCourses();
-  const { isAdmin } = useAuth();
+  const { isAdmin: rawIsAdmin } = useAuth();
+  const isAdmin = rawIsAdmin && !hideAdminControls;
   const admin = useAdmin();
   const confirm = useConfirm();
 

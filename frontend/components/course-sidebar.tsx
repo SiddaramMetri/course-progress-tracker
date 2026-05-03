@@ -26,6 +26,7 @@ interface CourseSidebarProps {
   selectedLessonId: string | null;
   onSelectLesson: (lesson: LessonOut) => void;
   onRefetch: () => void;
+  hideAdminControls?: boolean;
 }
 
 export function CourseSidebar({
@@ -33,8 +34,10 @@ export function CourseSidebar({
   selectedLessonId,
   onSelectLesson,
   onRefetch,
+  hideAdminControls = false,
 }: CourseSidebarProps) {
-  const { isAdmin } = useAuth();
+  const { isAdmin: rawIsAdmin } = useAuth();
+  const isAdmin = rawIsAdmin && !hideAdminControls;
   const admin = useAdmin();
   const confirm = useConfirm();
 

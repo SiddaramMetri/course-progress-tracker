@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function AdminLoginPage() {
@@ -134,6 +135,47 @@ export default function AdminLoginPage() {
               {loading ? "Signing in..." : "Admin Sign In"}
             </Button>
           </form>
+
+          <div className="relative my-5">
+            <Separator />
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
+              demo account
+            </span>
+          </div>
+
+          <Button
+            variant="outline"
+            className="w-full"
+            disabled={loading}
+            onClick={async () => {
+              setEmail("admin@demo.com");
+              setPassword("admin123");
+              setError(null);
+              setLoading(true);
+              try {
+                await login("admin@demo.com", "admin123");
+                const stored = localStorage.getItem("cpt-auth");
+                if (stored) {
+                  const parsed = JSON.parse(stored);
+                  if (parsed.user?.role !== "admin") {
+                    localStorage.removeItem("cpt-auth");
+                    setError("Not an admin account.");
+                    setLoading(false);
+                    return;
+                  }
+                }
+                toast.success("Welcome, Admin!");
+                router.push("/dashboard");
+              } catch {
+                setError("Demo login failed");
+              } finally {
+                setLoading(false);
+              }
+            }}
+          >
+            <ShieldCheck className="h-4 w-4 mr-2" />
+            Login as Demo Admin
+          </Button>
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-4">

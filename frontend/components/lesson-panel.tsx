@@ -28,6 +28,7 @@ interface LessonPanelProps {
   prevTitle?: string;
   nextTitle?: string;
   onRefetch?: () => void;
+  hideAdminControls?: boolean;
 }
 
 export function LessonPanel({
@@ -41,8 +42,10 @@ export function LessonPanel({
   prevTitle,
   nextTitle,
   onRefetch,
+  hideAdminControls = false,
 }: LessonPanelProps) {
-  const { isAdmin } = useAuth();
+  const { isAdmin: rawIsAdmin } = useAuth();
+  const isAdmin = rawIsAdmin && !hideAdminControls;
   const {
     attachments,
     loading: attachmentsLoading,
@@ -55,7 +58,7 @@ export function LessonPanel({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header */}
+      {/* Header with inline toggle */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <BookOpen className="h-6 w-6 text-primary shrink-0" />
@@ -63,11 +66,28 @@ export function LessonPanel({
             {lesson.title}
           </h2>
         </div>
-        {lesson.completed ? (
-          <CheckCircle2 className="h-6 w-6 text-green-500 shrink-0" />
-        ) : (
-          <Circle className="h-6 w-6 text-muted-foreground shrink-0" />
-        )}
+        <Button
+          onClick={() => onToggle(lesson.id)}
+          disabled={toggling}
+          variant={lesson.completed ? "outline" : "default"}
+          size="sm"
+          className={`shrink-0 gap-1.5 ${
+            lesson.completed
+              ? "text-green-600 border-green-200 hover:bg-green-50"
+              : ""
+          }`}
+        >
+          {lesson.completed ? (
+            <CheckCircle2 className="h-4 w-4" />
+          ) : (
+            <Circle className="h-4 w-4" />
+          )}
+          {toggling
+            ? "Updating..."
+            : lesson.completed
+              ? "Completed"
+              : "Mark Complete"}
+        </Button>
       </div>
 
       {/* Lesson meta */}
@@ -90,6 +110,7 @@ export function LessonPanel({
         storageKey={lesson.video_storage_key}
         lessonId={lesson.id}
         onVideoChange={onRefetch}
+        hideAdminControls={hideAdminControls}
       />
 
       {/* Description / Content (rendered as rich HTML) */}
@@ -114,22 +135,6 @@ export function LessonPanel({
           )}
         </div>
       )}
-
-      {/* Mark Complete / Incomplete */}
-      <div>
-        <Button
-          onClick={() => onToggle(lesson.id)}
-          disabled={toggling}
-          variant={lesson.completed ? "outline" : "default"}
-          className="w-full sm:w-auto"
-        >
-          {toggling
-            ? "Updating..."
-            : lesson.completed
-              ? "Mark as Incomplete"
-              : "Mark as Complete"}
-        </Button>
-      </div>
 
       <Separator />
 

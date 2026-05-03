@@ -1,8 +1,10 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import {
   BookOpen,
   GraduationCap,
+  Inbox,
   Layers,
   LayoutDashboard,
   LogOut,
@@ -18,15 +20,28 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
 import { useCourses } from "@/hooks/use-courses";
+import { apiFetch } from "@/lib/api";
 import { CourseProgress } from "./course-progress";
 
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, isAuthenticated, logout } = useAuth();
   const { courses } = useCourses();
   const totalLessons = courses.reduce((s, c) => s + c.total_count, 0);
   const totalCompleted = courses.reduce((s, c) => s + c.completed_count, 0);
+
+  // Pending access requests count (admin only)
+  const { data: pendingRequests } = useQuery({
+    queryKey: ["admin", "access-requests"],
+    queryFn: () =>
+      apiFetch<{ id: string; status: string }[]>("/admin/access-requests"),
+    enabled: isAdmin && isAuthenticated,
+    staleTime: 30000,
+  });
+  const pendingCount = (pendingRequests ?? []).filter(
+    (r) => r.status === "pending"
+  ).length;
 
   const handleLogout = () => {
     logout();
@@ -137,6 +152,19 @@ export function AppSidebar() {
                 "/admin/batches",
                 <Layers className="h-4 w-4" />,
                 "Batches"
+              )}
+              {navItem(
+                "/admin/requests",
+                <Inbox className="h-4 w-4" />,
+                "Requests",
+                pendingCount > 0 ? (
+                  <Badge
+                    variant="destructive"
+                    className="text-[10px] px-1.5 py-0 h-4 min-w-4 flex items-center justify-center"
+                  >
+                    {pendingCount}
+                  </Badge>
+                ) : undefined
               )}
             </div>
           </>

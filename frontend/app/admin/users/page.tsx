@@ -10,6 +10,7 @@ import {
   User,
   Users,
 } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
@@ -230,19 +231,35 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-5 gap-4 mb-6">
           <div className="rounded-lg border p-4">
-            <p className="text-sm text-muted-foreground">Total Users</p>
+            <p className="text-xs text-muted-foreground">Total Users</p>
             <p className="text-2xl font-semibold">{users.length}</p>
           </div>
           <div className="rounded-lg border p-4">
-            <p className="text-sm text-muted-foreground">Learners</p>
-            <p className="text-2xl font-semibold">
-              {users.filter((u) => u.role === "learner").length}
+            <p className="text-xs text-muted-foreground">Batch Learners</p>
+            <p className="text-2xl font-semibold text-primary">
+              {users.filter((u) => u.role === "learner" && u.batch_id).length}
             </p>
           </div>
           <div className="rounded-lg border p-4">
-            <p className="text-sm text-muted-foreground">Blocked</p>
+            <p className="text-xs text-muted-foreground">Self-Registered</p>
+            <p className="text-2xl font-semibold text-blue-600">
+              {users.filter((u) => u.role === "learner" && !u.batch_id).length}
+            </p>
+            <p className="text-[10px] text-muted-foreground">No batch assigned</p>
+          </div>
+          <div className="rounded-lg border p-4">
+            <p className="text-xs text-muted-foreground">Pending Requests</p>
+            <p className="text-2xl font-semibold text-orange-500">
+              {/* Will be shown from sidebar badge */}
+              <Link href="/admin/requests" className="hover:underline">
+                View
+              </Link>
+            </p>
+          </div>
+          <div className="rounded-lg border p-4">
+            <p className="text-xs text-muted-foreground">Blocked</p>
             <p className="text-2xl font-semibold text-destructive">
               {users.filter((u) => u.is_blocked).length}
             </p>
@@ -256,6 +273,7 @@ export default function AdminUsersPage() {
               <TableRow>
                 <TableHead>User</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Source</TableHead>
                 <TableHead>Batch</TableHead>
                 <TableHead>Progress</TableHead>
                 <TableHead>Status</TableHead>
@@ -265,7 +283,7 @@ export default function AdminUsersPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     Loading...
                   </TableCell>
                 </TableRow>
@@ -296,6 +314,19 @@ export default function AdminUsersPage() {
                       >
                         {user.role}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {user.role === "admin" ? (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      ) : user.batch_id ? (
+                        <Badge variant="outline" className="text-xs text-primary border-primary/30">
+                          Batch
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs text-blue-600 border-blue-300">
+                          Self-Registered
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       {user.role === "learner" ? (

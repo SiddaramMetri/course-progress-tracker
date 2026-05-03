@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
   useCallback,
@@ -52,6 +53,7 @@ const AuthContext = createContext<AuthContextValue>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient();
   const [auth, setAuth] = useState<AuthState | null>(null);
   const [ready, setReady] = useState(false);
 
@@ -87,12 +89,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     setAuth(state);
-  }, []);
+    // Clear all cached queries so dashboard fetches fresh data for this user
+    queryClient.clear();
+  }, [queryClient]);
 
   const logout = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     setAuth(null);
-  }, []);
+    // Clear all cached queries
+    queryClient.clear();
+  }, [queryClient]);
 
   if (!ready) return null;
 

@@ -1,14 +1,17 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { use } from "react";
 
 import { AppShell } from "@/components/app-shell";
+import { ConfettiCelebration, fireConfettiBurst } from "@/components/confetti-celebration";
 import { CourseSidebar } from "@/components/course-sidebar";
 import { LessonPanel } from "@/components/lesson-panel";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/use-auth";
 import { useCourseDetail } from "@/hooks/use-course-detail";
 import { useToggleLesson } from "@/hooks/use-toggle-lesson";
 import type { LessonOut } from "@/types";
@@ -19,8 +22,27 @@ export default function CourseDetailPage({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = use(params);
+  const { isAdmin } = useAuth();
   const { course, loading, error, refetch } = useCourseDetail(courseId);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+  const [learnerPreview, setLearnerPreview] = useState(false);
+
+  // Track previous completion to detect 100% transition
+  const prevCompletedRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!course) return;
+    const wasComplete = prevCompletedRef.current === course.total_count;
+    const isNowComplete =
+      course.total_count > 0 && course.completed_count === course.total_count;
+
+    // Fire confetti only on transition TO 100%
+    if (isNowComplete && !wasComplete && prevCompletedRef.current > 0) {
+      setTimeout(() => fireConfettiBurst("classic"), 300);
+    }
+
+    prevCompletedRef.current = course.completed_count;
+  }, [course]);
 
   const handleToggleSuccess = useCallback(() => {
     refetch();
@@ -93,6 +115,14 @@ export default function CourseDetailPage({
     );
   }
 
+  // Redirect to explore page if no access (403)
+  if (error?.includes("access") || error?.includes("403")) {
+    if (typeof window !== "undefined") {
+      window.location.href = `/explore/${courseId}`;
+    }
+    return null;
+  }
+
   if (error || !course) {
     return (
       <AppShell>
@@ -117,13 +147,29 @@ export default function CourseDetailPage({
   return (
     <AppShell>
       <div className="px-8 py-8">
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to dashboard
-        </Link>
+        <div className="flex items-center justify-between mb-6">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to dashboard
+          </Link>
+          {isAdmin && (
+            <Button
+              variant={learnerPreview ? "default" : "outline"}
+              size="sm"
+              onClick={() => setLearnerPreview(!learnerPreview)}
+              className={learnerPreview ? "bg-violet-600 hover:bg-violet-700" : ""}
+            >
+              {learnerPreview ? (
+                <><EyeOff className="h-3.5 w-3.5 mr-1" /> Exit Preview</>
+              ) : (
+                <><Eye className="h-3.5 w-3.5 mr-1" /> View as Learner</>
+              )}
+            </Button>
+          )}
+        </div>
 
         <div className="flex gap-8">
           {/* Course sidebar */}
@@ -135,11 +181,25 @@ export default function CourseDetailPage({
               }
               onSelectLesson={handleSelectLesson}
               onRefetch={refetch}
+              hideAdminControls={learnerPreview}
             />
           </aside>
 
           {/* Lesson content */}
           <div className="flex-1 min-w-0">
+            {/* Course completion celebration */}
+            {course.total_count > 0 &&
+              course.completed_count === course.total_count && (
+                <div className="mb-6 rounded-xl border border-green-200 bg-green-50/50 p-2">
+                  <ConfettiCelebration
+                    courseTitle={course.title}
+                    variant="classic"
+                    intensity={6}
+                    autoTrigger={false}
+                  />
+                </div>
+              )}
+
             {selectedLesson ? (
               <LessonPanel
                 lesson={selectedLesson}
@@ -152,6 +212,7 @@ export default function CourseDetailPage({
                 prevTitle={prevLesson?.title}
                 nextTitle={nextLesson?.title}
                 onRefetch={refetch}
+                hideAdminControls={learnerPreview}
               />
             ) : (
               <div className="rounded-lg border border-dashed p-12 text-center">
