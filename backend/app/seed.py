@@ -217,6 +217,10 @@ SEED_DATA = [
 def seed():
     Base.metadata.create_all(bind=engine)
 
+    # Run pending migrations
+    from app.migrations.migrate import run_migrations
+    run_migrations()
+
     db = SessionLocal()
     try:
         # Seed batches
