@@ -101,11 +101,17 @@ def upload_file(
 
 def generate_download_url(object_key: str, expires_in: int = 3600) -> str:
     client = get_s3_client()
-    return client.generate_presigned_url(
+    url = client.generate_presigned_url(
         "get_object",
         Params={"Bucket": settings.minio_bucket, "Key": object_key},
         ExpiresIn=expires_in,
     )
+    # Replace internal endpoint with public URL if configured
+    if settings.minio_public_url:
+        scheme = "https" if settings.minio_use_ssl else "http"
+        internal = f"{scheme}://{settings.minio_endpoint}"
+        url = url.replace(internal, settings.minio_public_url, 1)
+    return url
 
 
 def delete_file(object_key: str) -> None:

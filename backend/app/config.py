@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     minio_bucket: str = "course-materials"
     minio_use_ssl: bool = False
     minio_skip_ssl_verify: bool = False
+    minio_public_url: str = ""  # e.g. https://batchlearnapp-minio.siddarammetri.space
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
